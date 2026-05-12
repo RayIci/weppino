@@ -1,5 +1,6 @@
 ---
 name: Publish shared-kernel
+run-name: "shared-kernel ${{ github.ref_name }} by @${{ github.actor }}"
 
 # Triggers on version tags scoped to this library, e.g. shared-kernel-v0.1.0
 on:
