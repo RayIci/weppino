@@ -11,4 +11,3 @@ plugins {
 }
 
 rootProject.name = "shared-kernel"
-include("lib")
