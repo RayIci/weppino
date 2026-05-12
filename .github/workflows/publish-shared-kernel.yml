@@ -2,7 +2,9 @@
 name: Publish shared-kernel
 run-name: "shared-kernel ${{ github.ref_name }} by @${{ github.actor }}"
 
-# Triggers on version tags scoped to this library, e.g. shared-kernel-v0.1.0
+# Triggers only when a tag match this pattern (e.g. shared-kernel-v0.1.0)
+# Using a scoped prefix ensures this workflow fires only for this library,
+# not other tags
 on:
   push:
     tags:
@@ -10,24 +12,34 @@ on:
 
 jobs:
   publish:
+    # The type of machine that will run this job
     runs-on: ubuntu-latest
 
     permissions:
-      # Required to upload packages to GitHub Packages
-      packages: write
+      # Allows the job to download source code from the repo
       contents: read
+      # Allows the job to upload the built artifact to GitHub Packages
+      packages: write
 
     steps:
+      # Checkout the repository code onto the runner machine
       - uses: actions/checkout@v4
 
+      # Install the correct Java version on the runner
+      # Must match the toolchain version declared in build.gradle.kts
       - uses: actions/setup-java@v4
         with:
           java-version: "25"
           distribution: "temurin"
 
+      # The gradlew script loses its executable permission when checked out
+      # on Linux. This restores it so the next step can run it.
       - name: Grant execute permission to gradlew
         run: chmod +x libs/shared-kernel/gradlew
 
+      # Run the Gradle publish task which builds the jar and uploads it to
+      # GitHub Packages. GITHUB_ACTOR and GITHUB_TOKEN are injected by GitHub
+      # Actions automatically
       - name: Publish to GitHub Packages
         run: ./gradlew publish
         working-directory: libs/shared-kernel
