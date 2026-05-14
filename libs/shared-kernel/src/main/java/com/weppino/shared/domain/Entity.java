@@ -1,5 +1,7 @@
 package com.weppino.shared.domain;
 
+import java.util.Objects;
+
 /**
  * Base class for all entities in the domain model.
  *
@@ -16,10 +18,7 @@ public abstract class Entity<IdT> {
    */
   public Entity(IdT id) {
 
-    if (id == null) {
-      throw new IllegalArgumentException("Id cannot be null");
-    }
-
+    Objects.requireNonNull(id, "id must not be null");
     this.id = id;
   }
 

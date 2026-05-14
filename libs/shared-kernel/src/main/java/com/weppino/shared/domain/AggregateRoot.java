@@ -3,6 +3,7 @@ package com.weppino.shared.domain;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Base class for aggregate roots in the domain model. An aggregate root is an entity that serves as
@@ -33,10 +34,7 @@ public abstract class AggregateRoot<IdT> extends Entity<IdT> {
    */
   protected void registerEvent(DomainEvent event) {
 
-    if (event == null) {
-      throw new IllegalArgumentException("Domain event cannot be null");
-    }
-
+    Objects.requireNonNull(event, "event must not be null");
     domainEvents.add(event);
   }
 
