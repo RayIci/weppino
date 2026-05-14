@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Base class for aggregate roots in the domain model. An aggregate root is an entity that serves as
- * the entry point for a cluster of related entities and value objects. It is responsible for
- * maintaining the integrity of the aggregate and enforcing business rules.
+ * Base class for aggregate roots — the consistency boundary in DDD. All mutations to the aggregate
+ * and its children go through this class, which also collects {@link DomainEvent}s to be published
+ * after persistence.
  *
  * @param <IdT> the type of the aggregate root's identifier
  */
@@ -17,40 +17,36 @@ public abstract class AggregateRoot<IdT> extends Entity<IdT> {
   private final List<DomainEvent> domainEvents = new ArrayList<>();
 
   /**
-   * Constructs a new aggregate root with the given identifier.
+   * Constructs a new AggregateRoot with the given identifier.
    *
-   * @param id the unique identifier for the aggregate root
+   * @param id the unique identifier for this aggregate root
    */
   public AggregateRoot(IdT id) {
     super(id);
   }
 
   /**
-   * Registers a domain event to be dispatched later. This method is typically called by the
-   * aggregate root when a significant change occurs that should be communicated to other parts of
-   * the system.
+   * Records a domain event to be published after this aggregate is persisted. Call this inside
+   * business methods when a significant state change occurs.
    *
-   * @param event the domain event to register
+   * @param event the event to register
    */
   protected void registerEvent(DomainEvent event) {
-
     Objects.requireNonNull(event, "event must not be null");
     domainEvents.add(event);
   }
 
   /**
-   * Retrieves the list of domain events that have been registered on this aggregate root.
+   * Returns all pending domain events as an unmodifiable list. The application layer reads this
+   * after saving the aggregate and publishes the events.
    *
-   * @return a list of domain events
+   * @return unmodifiable list of pending events
    */
   public List<DomainEvent> getDomainEvents() {
     return Collections.unmodifiableList(domainEvents);
   }
 
-  /**
-   * Clears all domain events from the aggregate root. This is typically called after the events
-   * have been dispatched.
-   */
+  /** Clears pending events — call this after they have been successfully published. */
   public void clearDomainEvents() {
     domainEvents.clear();
   }
