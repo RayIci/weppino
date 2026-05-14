@@ -46,7 +46,7 @@ class EntityTest {
 
   @Test
   void nullIdThrowsException() {
-    assertThrows(IllegalArgumentException.class, () -> new TestEntity(null));
+    assertThrows(NullPointerException.class, () -> new TestEntity(null));
   }
 
   @Test

@@ -19,7 +19,7 @@ class AggregateRootTest {
     }
   }
 
-  private static class TestEvent extends DomainEvent {}
+  private static class TestEvent implements DomainEvent {}
 
   @Test
   void registerEventAddsEvent() {
@@ -45,7 +45,7 @@ class AggregateRootTest {
   @Test
   void registerNullEventThrows() {
     TestAggregate aggregate = new TestAggregate(UUID.randomUUID());
-    assertThrows(IllegalArgumentException.class, () -> aggregate.raise(null));
+    assertThrows(NullPointerException.class, () -> aggregate.raise(null));
   }
 
   @Test
