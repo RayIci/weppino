@@ -1,0 +1,17 @@
+version: "3"
+
+tasks:
+  format:
+    desc: Format TypeScript, JSON, YAML, CSS, and Markdown with Prettier
+    cmds:
+      - bunx prettier --write .
+
+  lint:
+    desc: Lint TypeScript with ESLint
+    cmds:
+      - bun run lint
+
+  test:
+    desc: Run tests
+    cmds:
+      - echo "No tests configured yet"

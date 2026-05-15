@@ -1,0 +1,22 @@
+version: "3"
+
+includes:
+  shared-kernel:
+    taskfile: ./libs/shared-kernel/Taskfile.yml
+    dir: ./libs/shared-kernel
+  store-website:
+    taskfile: ./apps/store-website/Taskfile.yml
+    dir: ./apps/store-website
+
+tasks:
+  format:
+    desc: Format all projects
+    deps: [shared-kernel:format, store-website:format]
+
+  lint:
+    desc: Lint all projects
+    deps: [shared-kernel:lint, store-website:lint]
+
+  test:
+    desc: Test all projects
+    deps: [shared-kernel:test, store-website:test]
