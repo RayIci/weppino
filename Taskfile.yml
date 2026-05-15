@@ -9,6 +9,11 @@ includes:
     dir: ./apps/store-website
 
 tasks:
+  setup:
+    desc: Install developer tools and wire up git hooks (run once after cloning)
+    cmds:
+      - bash scripts/setup.sh
+
   format:
     desc: Format all projects
     deps: [shared-kernel:format, store-website:format]

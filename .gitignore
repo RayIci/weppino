@@ -25,5 +25,8 @@ kls_database.db
 .DS_Store
 Thumbs.db
 
+# Lefthook local overrides (developer-specific, not shared)
+.lefthook-local.yml
+
 # Logs
 *.log

@@ -1,0 +1,16 @@
+pre-commit:
+  parallel: true
+  commands:
+    java-format:
+      glob: "{libs,services}/**/*.java"
+      run: bash scripts/spotless-staged.sh
+
+    ts-format:
+      root: "apps/store-website"
+      glob: "apps/store-website/**/*.{ts,tsx,json,yaml,css,md}"
+      run: bunx prettier --write {staged_files}
+
+    ts-lint:
+      root: "apps/store-website"
+      glob: "apps/store-website/**/*.{ts,tsx}"
+      run: bun run lint
