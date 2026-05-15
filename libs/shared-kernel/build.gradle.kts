@@ -1,6 +1,6 @@
 plugins {
-    // java-library exposes api vs implementation separation - consumers see only api dependencies
-    `java-library`
+    // java-conventions brings: java-library, Java 25 toolchain, Spotless, Checkstyle, JUnit 5
+    id("java-conventions")
     // maven-publish adds the publish task required to upload
     `maven-publish`
 }
@@ -9,24 +9,9 @@ plugins {
 group = "com.weppino"
 version = "0.1.0"
 
-repositories {
-    mavenCentral()
-}
-
 dependencies {
     testImplementation(libs.junit.jupiter)
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-}
-
-java {
-    // Pin the Java version independently of the JDK running Gradle
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(25)
-    }
-}
-
-tasks.named<Test>("test") {
-    useJUnitPlatform()
 }
 
 publishing {
