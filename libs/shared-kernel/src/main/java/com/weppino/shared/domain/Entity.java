@@ -26,9 +26,14 @@ public abstract class Entity<IdT> {
     return id;
   }
 
+  @SuppressWarnings("EqualsGetClass")
   @Override
   public boolean equals(Object obj) {
 
+    // getClass() is used instead of instanceof so that two entities of different concrete types
+    // are never equal even when they share the same ID (e.g. Customer(id=1) ≠ Order(id=1)).
+    // instanceof Entity<?> would pass for any subclass, making the ID comparison the only
+    // differentiator — which would incorrectly equate entities from different aggregates.
     if (obj == null || getClass() != obj.getClass()) {
       return false;
     }

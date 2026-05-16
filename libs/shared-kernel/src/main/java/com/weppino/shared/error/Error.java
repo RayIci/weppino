@@ -6,6 +6,7 @@ import java.util.Objects;
  * Represents a structured domain or application error — not an exception, but a first-class value
  * describing what went wrong, why, and how to categorize it.
  */
+@SuppressWarnings("JavaLangClash")
 public final class Error {
 
   private final String description;

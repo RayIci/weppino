@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -20,7 +19,7 @@ class ValueObjectTest {
     }
 
     @Override
-    protected Collection<Object> getEqualityComponents() {
+    protected List<Object> getEqualityComponents() {
       return List.of(amount, currency);
     }
   }

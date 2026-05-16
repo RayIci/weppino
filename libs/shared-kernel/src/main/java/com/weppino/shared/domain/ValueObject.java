@@ -1,6 +1,6 @@
 package com.weppino.shared.domain;
 
-import java.util.Collection;
+import java.util.List;
 
 /**
  * Base class for value objects in the domain model. A value object is an immutable type that
@@ -17,11 +17,16 @@ public abstract class ValueObject {
    *
    * @return a collection of the components that define the value object
    */
-  protected abstract Collection<Object> getEqualityComponents();
+  protected abstract List<Object> getEqualityComponents();
 
+  @SuppressWarnings("EqualsGetClass")
   @Override
   public boolean equals(Object obj) {
 
+    // getClass() is used instead of instanceof so that two value objects of different concrete
+    // types are never equal even when their components match (e.g. Money(100) ≠ Temperature(100)).
+    // instanceof ValueObject would pass for any subclass, making the component comparison the only
+    // differentiator — which would incorrectly equate unrelated value objects with the same data.
     if (obj == null || getClass() != obj.getClass()) {
       return false;
     }
