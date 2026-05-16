@@ -34,7 +34,7 @@ dependencies {
     // not 'implementation' or 'compileOnly' — so Gradle passes it to javac
     // via -processorpath rather than the compilation classpath.
     // Check https://github.com/google/error-prone/releases for the latest version.
-    errorprone("com.google.errorprone:error_prone_core:2.28.0")
+    errorprone("com.google.errorprone:error_prone_core:2.39.0")
 }
 
 spotless {
@@ -44,7 +44,7 @@ spotless {
     }
     kotlinGradle {
         // Formats .gradle.kts build files
-        ktlint("1.5.0")
+        ktlint("1.6.0")
     }
 }
 
