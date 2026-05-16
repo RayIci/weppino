@@ -3,10 +3,6 @@
 # Run once after cloning: task setup
 set -euo pipefail
 
-GJF_VERSION="1.27.0"
-GJF_JAR_DIR="$HOME/.local/share/google-java-format"
-GJF_JAR="$GJF_JAR_DIR/google-java-format-${GJF_VERSION}-all-deps.jar"
-
 install_precommit() {
   if command -v pre-commit &>/dev/null; then
     echo "pre-commit $(pre-commit --version) already installed — skipping"
@@ -36,7 +32,6 @@ install_gjf() {
 }
 
 install_precommit
-install_gjf
 
 echo ""
 echo "Wiring up git hooks..."

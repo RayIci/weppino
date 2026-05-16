@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
-GJF_JAR="$HOME/.local/share/google-java-format/google-java-format-1.27.0-all-deps.jar"
-exec java \
-  --add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
-  --add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED \
-  --add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED \
-  --add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
-  --add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED \
-  -jar "$GJF_JAR" --replace "$@"
+declare -A seen
+for f in "$@"; do
+  for dir in libs/*/  services/*/; do
+    [ -d "$dir" ] || continue
+    project="${dir%/}"
+    if [[ "$f" == "$project/"* ]] && [ -z "${seen[$project]+_}" ]; then
+      seen[$project]=1
+      echo "→ format: $project"
+      (cd "$project" && ./gradlew spotlessApply --quiet 2>&1)
+    fi
+  done
+done

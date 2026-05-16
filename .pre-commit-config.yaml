@@ -2,14 +2,14 @@ repos:
   - repo: local
     hooks:
       - id: java-format
-        name: Java (GJF)
+        name: Java format (Spotless)
         language: script
         entry: scripts/java-format.sh
         types: [java]
         pass_filenames: true
 
       - id: java-checkstyle
-        name: Java (Checkstyle)
+        name: Java lint (Checkstyle)
         language: script
         entry: scripts/java-checkstyle.sh
         types: [java]
