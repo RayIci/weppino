@@ -19,18 +19,6 @@ install_precommit() {
   fi
 }
 
-install_gjf() {
-  if [ -f "$GJF_JAR" ]; then
-    echo "google-java-format v${GJF_VERSION} already installed — skipping"
-    return
-  fi
-  mkdir -p "$GJF_JAR_DIR"
-  local url="https://github.com/google/google-java-format/releases/download/v${GJF_VERSION}/google-java-format-${GJF_VERSION}-all-deps.jar"
-  echo "Installing google-java-format v${GJF_VERSION}..."
-  curl -fsSL "$url" -o "$GJF_JAR"
-  echo "google-java-format installed at $GJF_JAR"
-}
-
 install_precommit
 
 echo ""
