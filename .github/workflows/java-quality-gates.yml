@@ -1,0 +1,169 @@
+---
+# Reusable quality-gate template for every Java project in this monorepo.
+#
+# USAGE — call this from another workflow file:
+#
+#   jobs:
+#     quality-gates:
+#       uses: ./.github/workflows/java-quality-gates.yml
+#       with:
+#         project-dir: libs/my-project   # path from repo root
+#         project-name: my-project       # short name for artifact labels
+#         java-version: '25'             # optional, defaults to '25'
+#
+# The single job inside is named 'build'. When called from a job named
+# 'quality-gates', the status check that appears in GitHub PR checks will
+# read: "quality-gates / build".
+name: Java quality gates (reusable)
+
+# workflow_call makes this a reusable workflow — it can only be triggered by
+# other workflows using 'uses:', never by a push or pull_request directly.
+on:
+  workflow_call:
+    inputs:
+      # Path to the Java project directory, relative to the repository root.
+      # This is used as the working-directory for every Gradle command and
+      # to locate the gradlew wrapper. Example: 'libs/shared-kernel'.
+      project-dir:
+        description: "Path to the Java project from the repo root (e.g. libs/shared-kernel)"
+        required: true
+        type: string
+
+      # Short identifier used to label uploaded artifacts so that multiple
+      # Java projects running this workflow in the same workflow run do not
+      # overwrite each other's test results or coverage reports.
+      # Example: 'shared-kernel'
+      project-name:
+        description: "Short project name used to label CI artifacts (e.g. shared-kernel)"
+        required: true
+        type: string
+
+      # Java version passed to actions/setup-java. Must match the toolchain
+      # version declared in build-logic/src/main/kotlin/java-conventions.gradle.kts.
+      # Defaulting to '25' here keeps callers DRY as long as the monorepo uses
+      # a single Java version; callers can override if a project ever differs.
+      java-version:
+        description: "Java version to install (must match toolchain in java-conventions.gradle.kts)"
+        required: false
+        type: string
+        default: "25"
+
+jobs:
+  # This job name appears as the suffix of the GitHub status check.
+  # If the caller job is named 'quality-gates', the check reads: quality-gates / build.
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Fetch the full commit so Gradle's incremental build inputs are accurate.
+      # A shallow clone (actions/checkout default depth=1) is fine for builds,
+      # but fetching the full history costs little and avoids edge cases with
+      # git-describe or build-scan tooling.
+      - uses: actions/checkout@v4
+
+      # Install the exact Java distribution requested by the caller.
+      # 'temurin' (Eclipse Adoptium) matches what most developers install locally
+      # via SDKMAN or Homebrew, keeping local and CI behaviour identical.
+      - uses: actions/setup-java@v4
+        with:
+          java-version: ${{ inputs.java-version }}
+          distribution: temurin
+
+      # Restore the Gradle dependency cache and wrapper binaries from a previous run.
+      # Without caching, Gradle re-downloads all dependencies on every CI run —
+      # typically 100-300 MB — adding 1-3 minutes of pure network wait time.
+      #
+      # Cache key strategy:
+      #   - Prefixed with 'project-name' so each project gets its own cache entry.
+      #     Two projects sharing a cache key would evict each other constantly.
+      #   - Hashed on all .gradle.kts, gradle.properties, and build-logic files.
+      #     The cache invalidates only when an actual dependency version changes.
+      #   - 'restore-keys' is a fallback prefix: if the exact key misses (e.g. first
+      #     run after bumping a library), Gradle restores the closest older entry
+      #     and downloads only the delta — still much faster than a cold start.
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ inputs.project-name }}-${{ hashFiles('**/build.gradle.kts', '**/settings.gradle.kts', '**/gradle.properties', 'build-logic/**') }}
+          restore-keys: gradle-${{ inputs.project-name }}-
+
+      # gradlew loses its executable bit when Git checks it out on Linux.
+      # Without chmod the next step exits with: /usr/bin/env: 'bash': Permission denied.
+      # '${{ inputs.project-dir }}' resolves to the path passed by the caller (e.g. libs/shared-kernel).
+      - name: Grant execute permission to gradlew
+        run: chmod +x ${{ inputs.project-dir }}/gradlew
+
+      # ── GATE 1: FORMAT ──────────────────────────────────────────────────────
+      # spotlessCheck verifies that every Java and .gradle.kts file matches
+      # Google Java Format exactly. It reads files and exits non-zero if any
+      # file differs from what the formatter would produce — it does NOT reformat.
+      # Developers run 'task shared-kernel:format' locally (or rely on the
+      # pre-commit hook) before pushing to ensure this gate always passes.
+      # '--quiet' suppresses Gradle's lifecycle noise; errors still print.
+      # 'working-directory' sets the shell CWD to the project folder so that
+      # './gradlew' resolves to the correct wrapper for this project.
+      - name: Format check (Spotless)
+        run: ./gradlew spotlessCheck --quiet
+        working-directory: ${{ inputs.project-dir }}
+
+      # ── GATE 2: LINT ────────────────────────────────────────────────────────
+      # Checkstyle enforces Google Java Style rules across both main sources
+      # (checkstyleMain) and test sources (checkstyleTest). Running both ensures
+      # test code is held to the same quality bar as production code.
+      # The convention plugin sets maxWarnings = 0, so even a single warning
+      # fails the build — there is no "warning only" mode in this project.
+      - name: Lint check (Checkstyle)
+        run: ./gradlew checkstyleMain checkstyleTest --quiet
+        working-directory: ${{ inputs.project-dir }}
+
+      # ── GATE 3: LSP / COMPILE ───────────────────────────────────────────────
+      # compileJava and compileTestJava invoke javac, which is the source of truth
+      # for type errors in Java — equivalent to what an IDE language server (LSP)
+      # reports in real time. Every missing import, wrong type, or undefined symbol
+      # surfaces here. Error Prone (wired in by java-conventions.gradle.kts as a
+      # javac plugin) also runs at this step, catching deeper issues: null-safety
+      # violations, broken equals/hashCode contracts, and common API misuse patterns.
+      # Compiling test sources here means errors in test helpers are caught before
+      # the full test suite starts — failing fast saves significant CI time.
+      - name: Compile + Error Prone (LSP check)
+        run: ./gradlew compileJava compileTestJava --quiet
+        working-directory: ${{ inputs.project-dir }}
+
+      # ── GATE 4: TEST + COVERAGE ─────────────────────────────────────────────
+      # JUnit 5 tests run last: they are the most expensive step (JVM startup,
+      # class loading, I/O for any fixtures). Placing them after the cheaper
+      # format/lint/compile gates means a trivial formatting mistake never burns
+      # minutes waiting for tests.
+      # 'jacocoTestReport' is wired to run automatically after 'test' via
+      # 'finalizedBy' in the convention plugin — it produces the coverage report
+      # even when tests fail, so CI always has a coverage artifact to upload.
+      - name: Test + Coverage
+        run: ./gradlew test jacocoTestReport --quiet
+        working-directory: ${{ inputs.project-dir }}
+
+      # Upload JUnit XML results so GitHub renders a test summary in the PR checks
+      # tab, showing which tests passed, failed, or were skipped without requiring
+      # log inspection. The artifact name is suffixed with project-name so multiple
+      # Java projects running this template do not overwrite each other's results.
+      # 'if: always()' overrides the default skip-on-failure so the artifact uploads
+      # even when the test step failed — that is exactly when you need the report most.
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ inputs.project-name }}
+          path: ${{ inputs.project-dir }}/build/test-results/
+
+      # Upload the JaCoCo HTML + XML coverage report as a downloadable artifact.
+      # No minimum coverage threshold is enforced — this is for visibility only.
+      # To view: GitHub Actions run page → Artifacts → coverage-report-<project-name>
+      # → download → open index.html in a browser.
+      # 'if: always()' ensures this uploads even when tests fail.
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report-${{ inputs.project-name }}
+          path: ${{ inputs.project-dir }}/build/reports/jacoco/

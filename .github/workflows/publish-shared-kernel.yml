@@ -1,36 +1,73 @@
 ---
+# Publishes the shared-kernel library to GitHub Packages (Maven repository).
+#
+# Triggers only when a version tag matching 'shared-kernel-v*' is pushed
+# (e.g. shared-kernel-v0.2.0). Using a scoped prefix ensures this workflow
+# fires only for this library — not for tags belonging to other projects.
+#
+# IMPORTANT: Publishing is gated behind quality checks.
+# The 'quality-gates' job runs first. The 'publish' job only starts if every
+# gate passes (format, lint, compile, test). If any gate fails, GitHub Actions
+# automatically skips the publish job — nothing reaches GitHub Packages.
+# This means: tagging a broken commit does not publish a broken library.
 name: Publish shared-kernel
 run-name: "shared-kernel ${{ github.ref_name }} by @${{ github.actor }}"
 
-# Triggers only when a tag match this pattern (e.g. shared-kernel-v0.1.0)
-# Using a scoped prefix ensures this workflow fires only for this library,
-# not other tags
 on:
   push:
     tags:
+      # Scoped tag pattern: only tags that start with 'shared-kernel-v' trigger this.
+      # Example matching tags: shared-kernel-v0.1.0, shared-kernel-v1.0.0-rc1
+      # Example non-matching tags: v1.0.0, orders-v0.1.0 (those trigger other workflows)
       - "shared-kernel-v*"
 
 jobs:
+  # ── QUALITY GATES ───────────────────────────────────────────────────────────
+  # Runs all four quality checks (format → lint → compile+Error Prone → test)
+  # before allowing the publish job to start. Defined once in the reusable
+  # template and called here with shared-kernel's project path.
+  # If any gate fails this job fails, and 'needs: quality-gates' on the publish
+  # job causes GitHub Actions to skip publish automatically — no extra logic needed.
+  quality-gates:
+    uses: ./.github/workflows/java-quality-gates.yml
+    with:
+      # The directory where shared-kernel's gradlew, settings.gradle.kts, and
+      # source code live, relative to the repository root.
+      project-dir: libs/shared-kernel
+
+      # Short name used to label uploaded CI artifacts (test results, coverage).
+      project-name: shared-kernel
+
+      # Java version — must match the toolchain in java-conventions.gradle.kts.
+      java-version: "25"
+
+  # ── PUBLISH ─────────────────────────────────────────────────────────────────
+  # Uploads the compiled library jar and its POM to GitHub Packages so other
+  # projects can declare it as a Maven dependency.
   publish:
-    # The type of machine that will run this job
+    # 'needs' creates a sequential dependency: this job only starts after
+    # 'quality-gates' completes successfully. If quality-gates fails or is
+    # skipped, GitHub Actions skips this job too — the library is never published.
+    needs: quality-gates
+
     runs-on: ubuntu-latest
 
     permissions:
-      # Allows the job to download source code from the repo
+      # contents: read — allows the job to checkout the source code
       contents: read
-      # Allows the job to upload the built artifact to GitHub Packages
+      # packages: write — allows the job to upload the built jar to GitHub Packages
       packages: write
 
     steps:
       # Checkout the repository code onto the runner machine
       - uses: actions/checkout@v4
 
-      # Install the correct Java version on the runner
-      # Must match the toolchain version declared in build.gradle.kts
+      # Install the correct Java version on the runner.
+      # Must match the toolchain version declared in java-conventions.gradle.kts.
       - uses: actions/setup-java@v4
         with:
           java-version: "25"
-          distribution: "temurin"
+          distribution: temurin
 
       # The gradlew script loses its executable permission when checked out
       # on Linux. This restores it so the next step can run it.
@@ -39,7 +76,7 @@ jobs:
 
       # Run the Gradle publish task which builds the jar and uploads it to
       # GitHub Packages. GITHUB_ACTOR and GITHUB_TOKEN are injected by GitHub
-      # Actions automatically
+      # Actions automatically — they do not need to be configured as secrets.
       - name: Publish to GitHub Packages
         run: ./gradlew publish
         working-directory: libs/shared-kernel
