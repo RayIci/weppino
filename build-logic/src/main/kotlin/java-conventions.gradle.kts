@@ -27,7 +27,8 @@ spotless {
 
 checkstyle {
     toolVersion = "10.26.1"
-    // Config lives at <repo-root>/config/checkstyle/ — shared by all Java projects
+    // google_checks.xml defaults severity to "warning" — treat warnings as errors
+    maxWarnings = 0
     val buildLogicDir =
         gradle.includedBuilds
             .firstOrNull { it.name == "build-logic" }
