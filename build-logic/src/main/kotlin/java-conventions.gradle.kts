@@ -16,9 +16,8 @@ java {
 
 spotless {
     java {
-        // Enforces Google Java Format — opinionated, zero config, auto-fixes on spotlessApply
-        googleJavaFormat("1.27.0")
         removeUnusedImports()
+        googleJavaFormat("1.27.0")
     }
     kotlinGradle {
         // Formats .gradle.kts build files
@@ -29,10 +28,11 @@ spotless {
 checkstyle {
     toolVersion = "10.26.1"
     // Config lives at <repo-root>/config/checkstyle/ — shared by all Java projects
-    val buildLogicDir = gradle.includedBuilds
-        .firstOrNull { it.name == "build-logic" }
-        ?.projectDir
-        ?: rootDir.parentFile.parentFile.resolve("build-logic")
+    val buildLogicDir =
+        gradle.includedBuilds
+            .firstOrNull { it.name == "build-logic" }
+            ?.projectDir
+            ?: rootDir.parentFile.parentFile.resolve("build-logic")
     configFile = buildLogicDir.resolve("src/main/resources/checkstyle/google_checks.xml")
 }
 
