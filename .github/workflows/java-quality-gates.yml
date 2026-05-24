@@ -54,6 +54,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    permissions:
+      # Required by dorny/test-reporter to post Check Runs on pull requests.
+      # Without this, the action can read test results but cannot write the
+      # check annotation back to GitHub — the PR test UI would never appear.
+      checks: write
+
     steps:
       # Fetch the full commit so Gradle's incremental build inputs are accurate.
       # A shallow clone (actions/checkout default depth=1) is fine for builds,
@@ -143,12 +149,28 @@ jobs:
         run: ./gradlew test jacocoTestReport --quiet
         working-directory: ${{ inputs.project-dir }}
 
-      # Upload JUnit XML results so GitHub renders a test summary in the PR checks
-      # tab, showing which tests passed, failed, or were skipped without requiring
-      # log inspection. The artifact name is suffixed with project-name so multiple
-      # Java projects running this template do not overwrite each other's results.
-      # 'if: always()' overrides the default skip-on-failure so the artifact uploads
-      # even when the test step failed — that is exactly when you need the report most.
+      # Publish a Check Run directly on the PR with per-test pass/fail details.
+      # dorny/test-reporter reads the JUnit XML produced by Gradle and renders it
+      # as a native GitHub Check Run — visible in the PR "Checks" tab and as inline
+      # annotations on the exact line of a failing test in the diff view.
+      # 'fail-on-error: false' lets the step post results even when tests failed;
+      # the test step above already set the job exit code, so this avoids a
+      # redundant second failure signal. 'if: always()' ensures the report appears
+      # whether tests passed or failed — most useful precisely when they fail.
+      - name: Publish test report
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: Tests (${{ inputs.project-name }})
+          path: ${{ inputs.project-dir }}/build/test-results/**/*.xml
+          reporter: java-junit
+          fail-on-error: false
+
+      # Upload JUnit XML as a downloadable artifact for deeper inspection beyond
+      # what the Check Run UI shows (e.g. stack traces, surefire metadata).
+      # The artifact name is suffixed with project-name so multiple Java projects
+      # running this template do not overwrite each other's results.
+      # 'if: always()' ensures the artifact is available even when tests failed.
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
