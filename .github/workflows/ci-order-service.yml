@@ -73,6 +73,12 @@ jobs:
     # 'true' is compared as a string — GitHub Actions job outputs are always strings.
     if: needs.changes.outputs.java == 'true'
 
+    # Grant checks:write so the reusable workflow's 'build' job can post a Check
+    # Run via dorny/test-reporter. Without this the nested job is only allowed
+    # 'checks: none' and GitHub rejects the workflow at validation time.
+    permissions:
+      checks: write
+
     # 'uses' calls a reusable workflow defined in this same repository.
     # The path is relative to the repo root and must point to a workflow
     # that declares 'on: workflow_call'.
