@@ -149,16 +149,29 @@ jobs:
         run: ./gradlew test jacocoTestReport --quiet
         working-directory: ${{ inputs.project-dir }}
 
+      # Detect whether Gradle produced any JUnit XML files. Projects with no tests
+      # yet (or whose tests all compile-failed) produce no XML, and dorny/test-reporter
+      # treats "no files found" as a hard error regardless of fail-on-error. We skip
+      # the reporter entirely in that case rather than fail the build artificially.
+      - name: Check for test results
+        id: check-results
+        if: always()
+        run: |
+          if find ${{ inputs.project-dir }}/build/test-results -name '*.xml' -print -quit 2>/dev/null | grep -q .; then
+            echo "found=true" >> $GITHUB_OUTPUT
+          else
+            echo "found=false" >> $GITHUB_OUTPUT
+          fi
+
       # Publish a Check Run directly on the PR with per-test pass/fail details.
       # dorny/test-reporter reads the JUnit XML produced by Gradle and renders it
       # as a native GitHub Check Run — visible in the PR "Checks" tab and as inline
       # annotations on the exact line of a failing test in the diff view.
       # 'fail-on-error: false' lets the step post results even when tests failed;
       # the test step above already set the job exit code, so this avoids a
-      # redundant second failure signal. 'if: always()' ensures the report appears
-      # whether tests passed or failed — most useful precisely when they fail.
+      # redundant second failure signal.
       - name: Publish test report
-        if: always()
+        if: always() && steps.check-results.outputs.found == 'true'
         uses: dorny/test-reporter@v1
         with:
           name: Tests (${{ inputs.project-name }})
