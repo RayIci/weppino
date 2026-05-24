@@ -4,6 +4,9 @@ includes:
   shared-kernel:
     taskfile: ./libs/shared-kernel/Taskfile.yml
     dir: ./libs/shared-kernel
+  order-service:
+    taskfile: ./services/order-service/Taskfile.yml
+    dir: ./services/order-service
   store-website:
     taskfile: ./apps/store-website/Taskfile.yml
     dir: ./apps/store-website
@@ -16,12 +19,12 @@ tasks:
 
   format:
     desc: Format all projects
-    deps: [shared-kernel:format, store-website:format]
+    deps: [shared-kernel:format, order-service:format, store-website:format]
 
   lint:
     desc: Lint all projects
-    deps: [shared-kernel:lint, store-website:lint]
+    deps: [shared-kernel:lint, order-service:lint, store-website:lint]
 
   test:
     desc: Test all projects
-    deps: [shared-kernel:test, store-website:test]
+    deps: [shared-kernel:test, order-service:test, store-website:test]

@@ -87,4 +87,30 @@ tasks.named<JacocoReport>("jacocoTestReport") {
         // build/reports/jacoco/test/html/index.html — useful for local review.
         html.required = true
     }
+
+    // Run coverage verification immediately after the report is generated so that
+    // `./gradlew test jacocoTestReport` remains the only command CI needs — no
+    // extra task required in the workflow YAML.
+    finalizedBy(tasks.named("jacocoTestCoverageVerification"))
+}
+
+// Enforce a minimum line-coverage threshold across all classes.
+// The build fails here — before CI uploads any artifact — if coverage drops below
+// the limit, making it impossible to merge code that degrades test coverage.
+tasks.named<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
+    // dependsOn ensures the .exec binary data written by 'test' has already been
+    // processed into the report before verification reads coverage metrics.
+    dependsOn(tasks.named("jacocoTestReport"))
+
+    violationRules {
+        rule {
+            limit {
+                // LINE counts source lines hit by at least one test.
+                // COVEREDRATIO expresses the threshold as a fraction (0.70 = 70%).
+                counter = "LINE"
+                value = "COVEREDRATIO"
+                minimum = "0.70".toBigDecimal()
+            }
+        }
+    }
 }
