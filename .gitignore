@@ -3,7 +3,7 @@
 build/
 *.class
 *.jar
-!gradle/wrapper/gradle-wrapper.jar
+!**/gradle/wrapper/gradle-wrapper.jar
 
 # Node / Next.js
 node_modules/
