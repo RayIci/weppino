@@ -1,0 +1,6 @@
+# Weppino
+
+| Project         | CI                                                                                                                                                                                  | Coverage                                                                                                                                 |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `shared-kernel` | [![CI shared-kernel](https://github.com/RayIci/weppino/actions/workflows/ci-shared-kernel.yml/badge.svg)](https://github.com/RayIci/weppino/actions/workflows/ci-shared-kernel.yml) | [![Coverage](https://codecov.io/gh/RayIci/weppino/branch/main/graph/badge.svg?flag=shared-kernel)](https://codecov.io/gh/RayIci/weppino) |
+| `order-service` | [![CI order-service](https://github.com/RayIci/weppino/actions/workflows/ci-order-service.yml/badge.svg)](https://github.com/RayIci/weppino/actions/workflows/ci-order-service.yml) | [![Coverage](https://codecov.io/gh/RayIci/weppino/branch/main/graph/badge.svg?flag=order-service)](https://codecov.io/gh/RayIci/weppino) |

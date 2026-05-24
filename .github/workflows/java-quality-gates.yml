@@ -202,3 +202,17 @@ jobs:
         with:
           name: coverage-report-${{ inputs.project-name }}
           path: ${{ inputs.project-dir }}/build/reports/jacoco/
+
+      # Upload JaCoCo XML to Codecov so the per-project coverage badge stays current.
+      # 'flags' scopes the report to this project's flag in codecov.yml — each service
+      # and library gets its own badge rather than a single repo-wide number.
+      # 'fail_ci_if_error: false' prevents a Codecov outage from breaking the build.
+      - name: Upload coverage to Codecov
+        if: always()
+        uses: codecov/codecov-action@v5
+        with:
+          files: ${{ inputs.project-dir }}/build/reports/jacoco/test/jacocoTestReport.xml
+          flags: ${{ inputs.project-name }}
+          fail_ci_if_error: false
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

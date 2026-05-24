@@ -1,0 +1,23 @@
+coverage:
+  # Disable the single repo-wide status check — each project is tracked
+  # independently via flags, so a global pass/fail would be misleading.
+  status:
+    project:
+      default:
+        enabled: false
+    patch:
+      default:
+        enabled: false
+
+flags:
+  shared-kernel:
+    paths:
+      - libs/shared-kernel/
+    # carryforward keeps the badge up-to-date even when CI skips this project
+    # because no files changed in the current push.
+    carryforward: true
+
+  order-service:
+    paths:
+      - services/order-service/
+    carryforward: true
