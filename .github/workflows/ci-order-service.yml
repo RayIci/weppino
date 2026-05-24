@@ -1,0 +1,115 @@
+---
+# CI pipeline for the order-service Java microservice.
+#
+# Runs on every pull request targeting main and on every push that lands on main,
+# ensuring main stays green after merges and no PR can merge without passing all
+# quality checks.
+#
+# Quality gates (format → lint → compile → test) are defined once in
+# java-quality-gates.yml and called here with order-service's project path.
+# To add CI for a new Java project, copy this file, update the paths in the
+# 'changes' job, and update the 'with' inputs in the 'quality-gates' job.
+name: CI order-service
+run-name: "order-service CI by @${{ github.actor }}"
+
+on:
+  # Trigger on every pull request that targets main, regardless of which files
+  # changed. Fine-grained filtering (skip if no Java files touched) is handled
+  # by the 'changes' job below so the logic lives in one place.
+  pull_request:
+    branches: [main]
+
+  # Also trigger on direct pushes to main (e.g. after a PR is merged).
+  # This ensures main is always verified — it catches any gap between what the
+  # PR checks confirmed and what actually landed on the branch.
+  push:
+    branches: [main]
+
+jobs:
+  # ── CHANGE DETECTION ────────────────────────────────────────────────────────
+  # Checks whether the files that affect the order-service Java build actually
+  # changed in this push or PR. Its output ('java: true/false') drives the
+  # conditional on the quality-gates job. This avoids running Gradle at all for
+  # PRs that only touch TypeScript, docs, or other unrelated files.
+  changes:
+    runs-on: ubuntu-latest
+
+    # Expose the filter result as a job output. Downstream jobs read this via
+    # needs.changes.outputs.java. GitHub Actions outputs are always strings,
+    # so comparisons use the string 'true', not a boolean.
+    outputs:
+      java: ${{ steps.filter.outputs.java }}
+
+    steps:
+      # Checkout is required so dorny/paths-filter can diff the changed files
+      # against the base branch reference.
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          # 'java' becomes 'true' if any file under these directories changed.
+          # build-logic is included because a change to a convention plugin
+          # (e.g. bumping Checkstyle, adding Error Prone) affects the Java build
+          # even if no .java source files changed in order-service itself.
+          filters: |
+            java:
+              - 'services/order-service/**'
+              - 'build-logic/**'
+
+  # ── QUALITY GATES ───────────────────────────────────────────────────────────
+  # Delegates all quality-gate steps to the shared reusable workflow.
+  # The workflow runs: format check → lint → compile+Error Prone → test+coverage.
+  # If any gate fails, the job fails here and GitHub blocks the PR from merging
+  # (once branch protection is configured to require this check).
+  #
+  # Status check name in GitHub PR checks: "quality-gates / build"
+  # Use that exact string when configuring branch protection required checks.
+  quality-gates:
+    # Do not start until the changes job has finished and published its outputs.
+    needs: changes
+
+    # Skip this job entirely if no Java or Gradle files were modified.
+    # 'true' is compared as a string — GitHub Actions job outputs are always strings.
+    if: needs.changes.outputs.java == 'true'
+
+    # 'uses' calls a reusable workflow defined in this same repository.
+    # The path is relative to the repo root and must point to a workflow
+    # that declares 'on: workflow_call'.
+    uses: ./.github/workflows/java-quality-gates.yml
+
+    # 'with' passes the input values declared in java-quality-gates.yml.
+    with:
+      # The directory where order-service's gradlew, settings.gradle.kts, and
+      # source code live, relative to the repository root.
+      project-dir: services/order-service
+
+      # Short name used to label uploaded CI artifacts (test results, coverage).
+      # Artifacts will appear as: test-results-order-service, coverage-report-order-service.
+      project-name: order-service
+
+      # Java version — must match the toolchain in java-conventions.gradle.kts.
+      java-version: "25"
+
+  # ── CI RESULT ───────────────────────────────────────────────────────────────
+  # Stable required check for branch protection. Always runs and reports success
+  # when quality-gates either passed or was legitimately skipped (no Java files
+  # changed). This solves the GitHub limitation where a skipped reusable-workflow
+  # job never posts its inner check runs, leaving "quality-gates / build" absent
+  # and branch protection stuck waiting forever.
+  #
+  # Branch protection required check: "ci-result"
+  ci-result:
+    name: CI Result
+    runs-on: ubuntu-latest
+    needs: [quality-gates]
+    if: always()
+    steps:
+      - name: Verify quality gates
+        run: |
+          result="${{ needs.quality-gates.result }}"
+          if [[ "$result" == "success" || "$result" == "skipped" ]]; then
+            exit 0
+          else
+            exit 1
+          fi

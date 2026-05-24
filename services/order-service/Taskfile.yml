@@ -1,0 +1,17 @@
+version: "3"
+
+tasks:
+  format:
+    desc: Format Java and .gradle.kts files with Spotless
+    cmds:
+      - ./gradlew spotlessApply
+
+  lint:
+    desc: Check formatting (Spotless) and style rules (Checkstyle)
+    cmds:
+      - ./gradlew spotlessCheck checkstyleMain checkstyleTest
+
+  test:
+    desc: Run all tests
+    cmds:
+      - ./gradlew test
