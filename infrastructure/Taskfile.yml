@@ -13,20 +13,27 @@ tasks:
     desc: Create required Kubernetes namespaces
     cmds:
       - kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
+      - kubectl create namespace ingress-nginx --dry-run=client -o yaml | kubectl apply -f -
 
   ingress-nginx:
-    desc: Install ingress-nginx controller
+    desc: Install ingress-nginx controller and wait for it to be ready
     cmds:
       - helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
       - helm repo update
       - helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx -n ingress-nginx --create-namespace
+      - kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=120s
 
   argocd:
-    desc: Install ArgoCD
+    desc: Install ArgoCD with admin/admin credentials for dev
     cmds:
       - helm repo add argo https://argoproj.github.io/argo-helm
       - helm repo update
       - helm upgrade --install argocd argo/argo-cd -n argocd -f argocd/dev/values.yaml
+      - kubectl wait --namespace argocd --for=condition=ready pod --selector=app.kubernetes.io/name=argocd-server --timeout=120s
+      - |
+        HASH=$(python3 -c "import bcrypt; print(bcrypt.hashpw(b'admin', bcrypt.gensalt(10)).decode())")
+        kubectl -n argocd patch secret argocd-secret \
+          -p "{\"stringData\":{\"admin.password\":\"$HASH\",\"admin.passwordMtime\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}}"
 
   argocd-apps:
     desc: Register ArgoCD applications (ArgoCD takes over from here)
