@@ -1,0 +1,34 @@
+version: "3"
+
+tasks:
+  bootstrap:
+    desc: Bootstrap the local Kubernetes dev cluster (run once after cloning)
+    cmds:
+      - task: namespaces
+      - task: ingress-nginx
+      - task: argocd
+      - task: argocd-apps
+
+  namespaces:
+    desc: Create required Kubernetes namespaces
+    cmds:
+      - kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
+
+  ingress-nginx:
+    desc: Install ingress-nginx controller
+    cmds:
+      - helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+      - helm repo update
+      - helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx -n ingress-nginx --create-namespace
+
+  argocd:
+    desc: Install ArgoCD
+    cmds:
+      - helm repo add argo https://argoproj.github.io/argo-helm
+      - helm repo update
+      - helm upgrade --install argocd argo/argo-cd -n argocd -f argocd/dev/values.yaml
+
+  argocd-apps:
+    desc: Register ArgoCD applications (ArgoCD takes over from here)
+    cmds:
+      - kubectl apply -f argocd/dev/apps/
