@@ -1,0 +1,14 @@
+{
+  "realm": "weppino",
+  "enabled": true,
+  "displayName": "Weppino",
+  "sslRequired": "external",
+  "registrationAllowed": true,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": true,
+  "accessTokenLifespan": 300,
+  "ssoSessionMaxLifespan": 36000
+}
