@@ -47,6 +47,9 @@ spec:
               value: http://keycloak
             - name: IMPORT_FILES_LOCATIONS
               value: /config/realm.yaml
+            # Variable substitution in realm.yaml is disabled by default.
+            - name: IMPORT_VAR_SUBSTITUTION_ENABLED
+              value: "true"
             - name: KEYCLOAK_USER
               valueFrom:
                 secretKeyRef:
