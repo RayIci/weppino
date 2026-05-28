@@ -25,8 +25,6 @@ spec:
               value: postgres
             - name: KC_DB_URL
               value: jdbc:postgresql://postgres:5432/keycloak
-
-            # Database credentials injected from the postgres-secret defined in postgres.yaml.
             - name: KC_DB_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -37,10 +35,6 @@ spec:
                 secretKeyRef:
                   name: postgres-secret
                   key: POSTGRES_PASSWORD
-
-            # Admin credentials injected from keycloak-admin-secret.yaml.
-            # Even in dev we use a Secret rather than plaintext to keep the pattern
-            # consistent with prod and avoid accidentally promoting hardcoded values.
             - name: KC_BOOTSTRAP_ADMIN_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -51,19 +45,10 @@ spec:
                 secretKeyRef:
                   name: keycloak-admin-secret
                   key: KC_BOOTSTRAP_ADMIN_PASSWORD
-
-            # Required for liveness/readiness probes to work. Exposes /health/live
-            # and /health/ready on the management port (9000).
             - name: KC_HEALTH_ENABLED
               value: "true"
-
-            # The canonical base URL Keycloak uses to generate links (email verification,
-            # OIDC issuer, etc.). Required when KC_HOSTNAME_ADMIN is set.
             - name: KC_HOSTNAME
               value: "http://keycloak.127.0.0.1.nip.io"
-
-            # Only respond to realm endpoints whose Host header matches KC_HOSTNAME.
-            # Admin console access is restricted at the ingress level (no /admin route).
             - name: KC_HOSTNAME_STRICT
               value: "true"
 
@@ -72,8 +57,6 @@ spec:
             - containerPort: 9000
               name: management
 
-          # Dev mode starts faster than prod, but still needs a short delay for the JVM
-          # and the DB connection to stabilise before probes begin.
           livenessProbe:
             httpGet:
               path: /health/live
@@ -101,8 +84,6 @@ spec:
     - name: http
       port: 80
       targetPort: 8080
-    # Management port exposed internally so the keycloak-config-cli Job initContainer
-    # can poll /health/ready before applying realm config.
     - name: management
       port: 9000
       targetPort: 9000

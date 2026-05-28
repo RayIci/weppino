@@ -1,9 +1,4 @@
 ---
-# Non-sensitive SMTP variables.
-# SMTP credentials must be provided via a manually applied secret (never commit to git):
-#   kubectl create secret generic keycloak-smtp-secret -n identity \
-#     --from-literal=SMTP_USER=<smtp-user> \
-#     --from-literal=SMTP_PASSWORD=<smtp-password>
 apiVersion: v1
 kind: ConfigMap
 metadata:

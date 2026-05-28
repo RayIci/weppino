@@ -17,8 +17,6 @@ spec:
       automountServiceAccountToken: false
       initContainers:
         - name: wait-for-keycloak
-          # Using a pinned image digest is ideal for production; at minimum pin the tag.
-          # Override this image per overlay via kustomize `images` if needed.
           image: curlimages/curl:8.12.1
           command:
             - sh
@@ -47,7 +45,9 @@ spec:
               value: http://keycloak
             - name: IMPORT_FILES_LOCATIONS
               value: /config/realm.yaml
-            # Variable substitution in realm.yaml is disabled by default.
+            # Enable variable substitution in the realm config file
+            # Without this, placeholders like $(VAR_NAME) in realm.yaml
+            # won't be replaced
             - name: IMPORT_VAR_SUBSTITUTION_ENABLED
               value: "true"
             - name: KEYCLOAK_USER

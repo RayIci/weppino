@@ -31,8 +31,8 @@ spec:
                   name: postgres-secret
                   key: POSTGRES_URL
 
-            # Database credentials are injected from a Secret that must be manually
-            # applied before ArgoCD syncs. Never hardcode credentials in the Deployment.
+            # Database credentials are injected from a Secret that must be
+            # manually applied before ArgoCD syncs.
             - name: KC_DB_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -78,7 +78,6 @@ spec:
               value: "auth.weppino.com"
 
             # Only respond to realm endpoints whose Host header matches KC_HOSTNAME.
-            # Admin console access is restricted at the ingress level (no /admin route).
             - name: KC_HOSTNAME_STRICT
               value: "true"
 
@@ -87,8 +86,6 @@ spec:
             - containerPort: 9000
               name: management
 
-          # Production mode takes longer to start than dev mode (JVM warmup, DB migrations).
-          # initialDelaySeconds is set higher than dev to avoid false-positive restarts.
           livenessProbe:
             httpGet:
               path: /health/live
@@ -104,9 +101,10 @@ spec:
             periodSeconds: 10
             failureThreshold: 3
 
-          # Keycloak is memory-hungry due to the JVM. 512Mi request / 1Gi limit is a
-          # conservative baseline for a single-realm, low-traffic deployment.
-          # Adjust based on observed usage.
+          # 512Mi request / 1Gi limit is a conservative baseline for a
+          # single-realm, low-traffic deployment.
+          #
+          # TODO: Adjust based on observed usage.
           resources:
             requests:
               cpu: 500m
@@ -127,8 +125,6 @@ spec:
     - name: http
       port: 80
       targetPort: 8080
-    # Management port exposed internally so the keycloak-config-cli Job initContainer
-    # can poll /health/ready before applying realm config.
     - name: management
       port: 9000
       targetPort: 9000

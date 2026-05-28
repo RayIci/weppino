@@ -1,9 +1,3 @@
----
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-
-namespace: identity
-
 # Secrets that must be manually applied before ArgoCD syncs (never committed to git):
 #
 #   keycloak-admin-secret:
@@ -22,6 +16,12 @@ namespace: identity
 #     kubectl create secret generic keycloak-smtp-secret -n identity \
 #       --from-literal=SMTP_USER=<smtp-user> \
 #       --from-literal=SMTP_PASSWORD=<smtp-password>
+
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: identity
 
 resources:
   - ../base
