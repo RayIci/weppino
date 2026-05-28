@@ -6,19 +6,30 @@ metadata:
   namespace: identity
   annotations:
     nginx.ingress.kubernetes.io/proxy-buffer-size: "128k"
-    # Block external access to the Keycloak admin console.
-    # Requires allow-snippet-annotations: true in the nginx ingress controller config.
-    nginx.ingress.kubernetes.io/server-snippet: |
-      location ^~ /admin {
-        return 403;
-      }
 spec:
   ingressClassName: nginx
   rules:
     - host: keycloak.127.0.0.1.nip.io
       http:
         paths:
-          - path: /
+          # Only expose the paths needed for authentication flows.
+          # /admin is intentionally omitted — requests to it return 404.
+          # Access the admin console via: kubectl port-forward svc/keycloak 8080:80 -n identity
+          - path: /realms
+            pathType: Prefix
+            backend:
+              service:
+                name: keycloak
+                port:
+                  number: 80
+          - path: /resources
+            pathType: Prefix
+            backend:
+              service:
+                name: keycloak
+                port:
+                  number: 80
+          - path: /js
             pathType: Prefix
             backend:
               service:
