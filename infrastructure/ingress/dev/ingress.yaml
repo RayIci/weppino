@@ -6,6 +6,12 @@ metadata:
   namespace: identity
   annotations:
     nginx.ingress.kubernetes.io/proxy-buffer-size: "128k"
+    # Block external access to the Keycloak admin console.
+    # Requires allow-snippet-annotations: true in the nginx ingress controller config.
+    nginx.ingress.kubernetes.io/server-snippet: |
+      location ^~ /admin {
+        return 403;
+      }
 spec:
   ingressClassName: nginx
   rules:

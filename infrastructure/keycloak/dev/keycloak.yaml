@@ -57,20 +57,15 @@ spec:
             - name: KC_HEALTH_ENABLED
               value: "true"
 
-            # Allows the realm endpoints to respond to any Host header (nip.io, localhost,
-            # etc.). In dev, traffic comes from multiple origins so a fixed hostname would
-            # require extra config for every access pattern. Never set this to false in prod.
-            - name: KC_HOSTNAME_STRICT
-              value: "false"
+            # The canonical base URL Keycloak uses to generate links (email verification,
+            # OIDC issuer, etc.). Required when KC_HOSTNAME_ADMIN is set.
+            - name: KC_HOSTNAME
+              value: "http://keycloak.127.0.0.1.nip.io"
 
-            # Restricts the admin console to requests whose Host header matches this URL.
-            # Requests arriving via the ingress get a 404 because their Host header
-            # does not match — only port-forward traffic does.
-            # Access the admin console via:
-            #   kubectl port-forward svc/keycloak 8080:80 -n identity
-            # then open http://localhost:8080
-            - name: KC_HOSTNAME_ADMIN
-              value: "http://localhost:8080"
+            # Only respond to realm endpoints whose Host header matches KC_HOSTNAME.
+            # Admin console access is restricted at the ingress level (no /admin route).
+            - name: KC_HOSTNAME_STRICT
+              value: "true"
 
           ports:
             - containerPort: 8080

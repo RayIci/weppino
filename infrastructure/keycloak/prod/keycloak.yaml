@@ -77,14 +77,10 @@ spec:
             - name: KC_HOSTNAME
               value: "auth.weppino.com"
 
-            # Restricts the admin console to the "localhost" hostname only.
-            # This means the admin UI is NOT reachable at auth.weppino.com/admin — any
-            # request with a Host header other than "localhost" is rejected by Keycloak.
-            # To access the admin console in prod, use:
-            #   kubectl port-forward svc/keycloak 8080:80 -n identity
-            # then open http://localhost:8080
-            - name: KC_HOSTNAME_ADMIN
-              value: "http://localhost:8080"
+            # Only respond to realm endpoints whose Host header matches KC_HOSTNAME.
+            # Admin console access is restricted at the ingress level (no /admin route).
+            - name: KC_HOSTNAME_STRICT
+              value: "true"
 
           ports:
             - containerPort: 8080
