@@ -1,0 +1,19 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: keycloak-config-vars
+  namespace: identity
+data:
+  IMPORT_VAR_SSL_REQUIRED: "external"
+  IMPORT_VAR_STORE_REDIRECT_URIS: '["http://localhost:3000/*","http://store.127.0.0.1.nip.io/*"]'
+  IMPORT_VAR_STORE_POST_LOGOUT_URIS: '["http://localhost:3000","http://store.127.0.0.1.nip.io"]'
+  IMPORT_VAR_STORE_WEB_ORIGINS: '["http://localhost:3000","http://store.127.0.0.1.nip.io"]'
+  IMPORT_VAR_SMTP_HOST: "mailpit"
+  IMPORT_VAR_SMTP_PORT: "1025"
+  IMPORT_VAR_SMTP_FROM: "noreply@weppino.dev"
+  IMPORT_VAR_SMTP_AUTH: "false"
+  IMPORT_VAR_SMTP_SSL: "false"
+  IMPORT_VAR_SMTP_STARTTLS: "false"
+  IMPORT_VAR_SMTP_USER: ""
+  IMPORT_VAR_SMTP_PASSWORD: ""

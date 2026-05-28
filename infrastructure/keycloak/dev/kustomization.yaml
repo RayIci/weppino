@@ -8,3 +8,6 @@ resources:
   - ../base
   - keycloak.yaml
   - postgres.yaml
+  - keycloak-admin-secret.yaml
+  - realm-vars.yaml
+  - mailpit.yaml

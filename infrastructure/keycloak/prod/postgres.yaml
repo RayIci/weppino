@@ -1,15 +1,9 @@
 ---
-apiVersion: v1
-kind: Secret
-metadata:
-  name: postgres-secret
-  namespace: identity
-type: Opaque
-stringData:
-  POSTGRES_USER: keycloak
-  POSTGRES_PASSWORD: keycloak
-  POSTGRES_DB: keycloak
----
+# postgres-secret must be manually applied before ArgoCD syncs prod:
+#   kubectl create secret generic postgres-secret -n identity \
+#     --from-literal=POSTGRES_USER=<user> \
+#     --from-literal=POSTGRES_PASSWORD=<strong-password> \
+#     --from-literal=POSTGRES_DB=keycloak
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -20,7 +14,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 1Gi
+      storage: 10Gi
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -48,6 +42,13 @@ spec:
           volumeMounts:
             - name: postgres-data
               mountPath: /var/lib/postgresql/data
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 512Mi
       volumes:
         - name: postgres-data
           persistentVolumeClaim:

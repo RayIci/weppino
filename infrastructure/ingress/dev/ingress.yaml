@@ -38,3 +38,22 @@ spec:
                 name: argocd-server
                 port:
                   number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mailpit
+  namespace: identity
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: mail.127.0.0.1.nip.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: mailpit
+                port:
+                  number: 8025

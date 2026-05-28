@@ -2,8 +2,15 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-# TODO: configure staging environment
 namespace: identity
+
+# TODO: mirror prod overlay structure when staging infra is ready.
+# Required files (copy from prod and update URLs/values):
+#   - keycloak.yaml      (KC_HOSTNAME: auth.stg.weppino.com)
+#   - postgres.yaml      (5Gi PVC)
+#   - realm-vars.yaml    (STORE_REDIRECT_URIS: https://stg.weppino.com/*)
+# Required manually applied secrets (same pattern as prod):
+#   - keycloak-admin-secret, postgres-secret, keycloak-smtp-secret
 
 resources:
   - ../base

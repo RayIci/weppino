@@ -17,12 +17,16 @@ spec:
       containers:
         - name: keycloak
           image: quay.io/keycloak/keycloak:26.3.3
-          args: ["start-dev", "--import-realm"]
+          # "start-dev" enables development mode: relaxed hostname/SSL checks, detailed
+          # logs, and no startup optimisation. Never use this in prod.
+          args: ["start-dev"]
           env:
             - name: KC_DB
               value: postgres
             - name: KC_DB_URL
               value: jdbc:postgresql://postgres:5432/keycloak
+
+            # Database credentials injected from the postgres-secret defined in postgres.yaml.
             - name: KC_DB_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -33,21 +37,52 @@ spec:
                 secretKeyRef:
                   name: postgres-secret
                   key: POSTGRES_PASSWORD
+
+            # Admin credentials injected from keycloak-admin-secret.yaml.
+            # Even in dev we use a Secret rather than plaintext to keep the pattern
+            # consistent with prod and avoid accidentally promoting hardcoded values.
             - name: KEYCLOAK_ADMIN
-              value: admin
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-admin-secret
+                  key: KEYCLOAK_ADMIN
             - name: KEYCLOAK_ADMIN_PASSWORD
-              value: admin
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-admin-secret
+                  key: KEYCLOAK_ADMIN_PASSWORD
+
+            # Required for liveness/readiness probes to work. Exposes /health/live
+            # and /health/ready on the management port (9000).
+            - name: KC_HEALTH_ENABLED
+              value: "true"
+
+            # Disables strict hostname validation so Keycloak accepts requests from any
+            # hostname (nip.io, localhost, etc.) without extra config. Dev only.
             - name: KC_HOSTNAME_STRICT
               value: "false"
+
           ports:
             - containerPort: 8080
-          volumeMounts:
-            - name: realm-config
-              mountPath: /opt/keycloak/data/import
-      volumes:
-        - name: realm-config
-          configMap:
-            name: keycloak-realm-config
+            - containerPort: 9000
+              name: management
+
+          # Dev mode starts faster than prod, but still needs a short delay for the JVM
+          # and the DB connection to stabilise before probes begin.
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: 9000
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 9000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 3
 ---
 apiVersion: v1
 kind: Service
@@ -58,5 +93,11 @@ spec:
   selector:
     app: keycloak
   ports:
-    - port: 80
+    - name: http
+      port: 80
       targetPort: 8080
+    # Management port exposed internally so the keycloak-config-cli Job initContainer
+    # can poll /health/ready before applying realm config.
+    - name: management
+      port: 9000
+      targetPort: 9000
