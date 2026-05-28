@@ -1,5 +1,5 @@
 ---
-# Non-sensitive SMTP and redirect variables.
+# Non-sensitive SMTP variables.
 # SMTP credentials must be provided via a manually applied secret (never commit to git):
 #   kubectl create secret generic keycloak-smtp-secret -n identity \
 #     --from-literal=IMPORT_VAR_SMTP_USER=<smtp-user> \
@@ -11,10 +11,7 @@ metadata:
   namespace: identity
 data:
   IMPORT_VAR_SSL_REQUIRED: "all"
-  IMPORT_VAR_STORE_REDIRECT_URIS: '["https://weppino.com/*"]'
-  IMPORT_VAR_STORE_POST_LOGOUT_URIS: '["https://weppino.com"]'
-  IMPORT_VAR_STORE_WEB_ORIGINS: '["https://weppino.com"]'
-  # Update with your SMTP provider details before deploying
+  # Update with your SMTP provider details before deploying.
   IMPORT_VAR_SMTP_HOST: "smtp.placeholder.com"
   IMPORT_VAR_SMTP_PORT: "587"
   IMPORT_VAR_SMTP_FROM: "noreply@weppino.com"

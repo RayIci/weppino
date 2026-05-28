@@ -62,6 +62,15 @@ spec:
             - name: KC_HOSTNAME_STRICT
               value: "false"
 
+            # Restricts the admin console to the "localhost" hostname only, consistent
+            # with prod. The ingress at keycloak.127.0.0.1.nip.io serves the weppino
+            # realm login page only — not the admin console.
+            # Access the admin console via:
+            #   kubectl port-forward svc/keycloak 8080:80 -n identity
+            # then open http://localhost:8080
+            - name: KC_HOSTNAME_ADMIN
+              value: "localhost"
+
           ports:
             - containerPort: 8080
             - containerPort: 9000

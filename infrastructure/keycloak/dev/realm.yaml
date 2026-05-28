@@ -48,11 +48,17 @@ clients:
     serviceAccountsEnabled: false
     attributes:
       pkce.code.challenge.method: "S256"
-    redirectUris: $(STORE_REDIRECT_URIS)
-    webOrigins: $(STORE_WEB_ORIGINS)
+    redirectUris:
+      - "http://localhost:3000/*"
+      - "http://store.127.0.0.1.nip.io/*"
+    webOrigins:
+      - "http://localhost:3000"
+      - "http://store.127.0.0.1.nip.io"
     # Post-logout redirect: where Keycloak sends the user after they log out.
     # Without this the logout flow lands on a Keycloak page instead of the store.
-    postLogoutRedirectUris: $(STORE_POST_LOGOUT_URIS)
+    postLogoutRedirectUris:
+      - "http://localhost:3000"
+      - "http://store.127.0.0.1.nip.io"
     fullScopeAllowed: false
     # Explicitly define which scopes are included in the token.
     # "roles" is intentionally excluded: Keycloak is a pure IDP here and does not
@@ -94,9 +100,7 @@ smtpServer:
   port: "$(SMTP_PORT)"
   from: "$(SMTP_FROM)"
   fromDisplayName: "Weppino"
-  # Dev: both false (Mailpit on 1025 needs neither).
-  # Prod: starttls true on port 587 (STARTTLS), or ssl true on port 465 (SMTPS).
-  # Never enable both at the same time.
+  # Mailpit on port 1025 requires neither SSL nor STARTTLS.
   ssl: "$(SMTP_SSL)"
   starttls: "$(SMTP_STARTTLS)"
   auth: "$(SMTP_AUTH)"

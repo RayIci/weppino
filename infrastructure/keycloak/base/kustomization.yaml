@@ -4,8 +4,3 @@ kind: Kustomization
 
 resources:
   - keycloak-config-job.yaml
-
-configMapGenerator:
-  - name: keycloak-realm-config
-    files:
-      - realm.yaml

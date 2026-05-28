@@ -23,8 +23,13 @@ spec:
           env:
             - name: KC_DB
               value: postgres
+            # Full JDBC URL to the managed database (RDS, Cloud SQL, etc.).
+            # Injected from postgres-secret so the hostname never lives in git.
             - name: KC_DB_URL
-              value: jdbc:postgresql://postgres:5432/keycloak
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_URL
 
             # Database credentials are injected from a Secret that must be manually
             # applied before ArgoCD syncs. Never hardcode credentials in the Deployment.

@@ -5,17 +5,33 @@ kind: Kustomization
 namespace: identity
 
 # Secrets that must be manually applied before ArgoCD syncs (never committed to git):
-#   keycloak-admin-secret   — kubectl create secret generic keycloak-admin-secret -n identity \
-#                               --from-literal=KEYCLOAK_ADMIN=admin \
-#                               --from-literal=KEYCLOAK_ADMIN_PASSWORD=<strong-password>
-#   postgres-secret         — see prod/postgres.yaml header comment
-#   keycloak-smtp-secret    — see prod/realm-vars.yaml header comment
+#
+#   keycloak-admin-secret:
+#     kubectl create secret generic keycloak-admin-secret -n identity \
+#       --from-literal=KEYCLOAK_ADMIN=admin \
+#       --from-literal=KEYCLOAK_ADMIN_PASSWORD=<strong-password>
+#
+#   postgres-secret (points to your managed DB — RDS, Cloud SQL, etc.):
+#     kubectl create secret generic postgres-secret -n identity \
+#       --from-literal=POSTGRES_URL=jdbc:postgresql://<managed-db-host>:5432/keycloak \
+#       --from-literal=POSTGRES_USER=<user> \
+#       --from-literal=POSTGRES_PASSWORD=<password> \
+#       --from-literal=POSTGRES_DB=keycloak
+#
+#   keycloak-smtp-secret (when SMTP auth is configured):
+#     kubectl create secret generic keycloak-smtp-secret -n identity \
+#       --from-literal=IMPORT_VAR_SMTP_USER=<smtp-user> \
+#       --from-literal=IMPORT_VAR_SMTP_PASSWORD=<smtp-password>
 
 resources:
   - ../base
   - keycloak.yaml
-  - postgres.yaml
   - realm-vars.yaml
+
+configMapGenerator:
+  - name: keycloak-realm-config
+    files:
+      - realm.yaml
 
 # Pin the keycloak-config-cli image to a specific version in prod.
 # Never run a floating tag (latest-*) in production — a silent upstream push

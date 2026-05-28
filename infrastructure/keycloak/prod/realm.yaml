@@ -1,0 +1,106 @@
+---
+realm: weppino
+enabled: true
+displayName: "Weppino"
+
+# Security
+sslRequired: "$(SSL_REQUIRED)"
+bruteForceProtected: true
+permanentLockout: false
+maxFailureWaitSeconds: 900
+minimumQuickLoginWaitSeconds: 60
+waitIncrementSeconds: 60
+quickLoginCheckMilliSeconds: 1000
+maxDeltaTimeSeconds: 43200
+failureFactor: 10
+
+# Registration
+registrationAllowed: true
+loginWithEmailAllowed: true
+registrationEmailAsUsername: true
+duplicateEmailsAllowed: false
+resetPasswordAllowed: true
+editUsernameAllowed: false
+verifyEmail: true
+
+# Password policy
+passwordPolicy: "length(8) and upperCase(1) and lowerCase(1) and digits(1) and specialChars(1) and notUsername(undefined)"
+
+# Token lifespans (seconds)
+accessTokenLifespan: 300
+ssoSessionMaxLifespan: 36000
+ssoSessionIdleTimeout: 1800
+
+# Enforce refresh token rotation: each refresh token is single-use and revoked
+# immediately after use. A new token is issued with every refresh. Prevents
+# replay attacks where a stolen refresh token is used by an attacker.
+revokeRefreshToken: true
+refreshTokenMaxReuse: 0
+
+clients:
+  - clientId: store-website
+    name: "Store Website"
+    description: "Weppino storefront (Next.js)"
+    enabled: true
+    publicClient: true
+    standardFlowEnabled: true
+    directAccessGrantsEnabled: false
+    serviceAccountsEnabled: false
+    attributes:
+      pkce.code.challenge.method: "S256"
+    redirectUris:
+      - "https://weppino.com/*"
+    webOrigins:
+      - "https://weppino.com"
+    # Post-logout redirect: where Keycloak sends the user after they log out.
+    # Without this the logout flow lands on a Keycloak page instead of the store.
+    postLogoutRedirectUris:
+      - "https://weppino.com"
+    fullScopeAllowed: false
+    # Explicitly define which scopes are included in the token.
+    # "roles" is intentionally excluded: Keycloak is a pure IDP here and does not
+    # manage application-level roles. Each application owns its own authorization.
+    defaultClientScopes:
+      - openid
+      - profile
+      - email
+      - web-origins
+      - acr
+      - basic
+    optionalClientScopes:
+      - address
+      - phone
+      - offline_access
+
+requiredActions:
+  - alias: VERIFY_EMAIL
+    name: "Verify Email"
+    providerId: VERIFY_EMAIL
+    enabled: true
+    defaultAction: true
+    priority: 50
+  - alias: UPDATE_PASSWORD
+    name: "Update Password"
+    providerId: UPDATE_PASSWORD
+    enabled: true
+    defaultAction: false
+    priority: 30
+  - alias: CONFIGURE_TOTP
+    name: "Configure OTP"
+    providerId: CONFIGURE_TOTP
+    enabled: true
+    defaultAction: false
+    priority: 10
+
+smtpServer:
+  host: "$(SMTP_HOST)"
+  port: "$(SMTP_PORT)"
+  from: "$(SMTP_FROM)"
+  fromDisplayName: "Weppino"
+  # Port 587 with STARTTLS is the standard for authenticated SMTP submission.
+  # Set ssl to true and starttls to false only if your provider requires SMTPS (port 465).
+  ssl: "$(SMTP_SSL)"
+  starttls: "$(SMTP_STARTTLS)"
+  auth: "$(SMTP_AUTH)"
+  user: "$(SMTP_USER)"
+  password: "$(SMTP_PASSWORD)"

@@ -11,3 +11,8 @@ resources:
   - keycloak-admin-secret.yaml
   - realm-vars.yaml
   - mailpit.yaml
+
+configMapGenerator:
+  - name: keycloak-realm-config
+    files:
+      - realm.yaml
