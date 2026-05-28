@@ -20,8 +20,8 @@ namespace: identity
 #
 #   keycloak-smtp-secret (when SMTP auth is configured):
 #     kubectl create secret generic keycloak-smtp-secret -n identity \
-#       --from-literal=IMPORT_VAR_SMTP_USER=<smtp-user> \
-#       --from-literal=IMPORT_VAR_SMTP_PASSWORD=<smtp-password>
+#       --from-literal=SMTP_USER=<smtp-user> \
+#       --from-literal=SMTP_PASSWORD=<smtp-password>
 
 resources:
   - ../base

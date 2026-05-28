@@ -2,21 +2,21 @@
 # Non-sensitive SMTP variables.
 # SMTP credentials must be provided via a manually applied secret (never commit to git):
 #   kubectl create secret generic keycloak-smtp-secret -n identity \
-#     --from-literal=IMPORT_VAR_SMTP_USER=<smtp-user> \
-#     --from-literal=IMPORT_VAR_SMTP_PASSWORD=<smtp-password>
+#     --from-literal=SMTP_USER=<smtp-user> \
+#     --from-literal=SMTP_PASSWORD=<smtp-password>
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: keycloak-config-vars
   namespace: identity
 data:
-  IMPORT_VAR_SSL_REQUIRED: "all"
+  SSL_REQUIRED: "all"
   # Update with your SMTP provider details before deploying.
-  IMPORT_VAR_SMTP_HOST: "smtp.placeholder.com"
-  IMPORT_VAR_SMTP_PORT: "587"
-  IMPORT_VAR_SMTP_FROM: "noreply@weppino.com"
-  IMPORT_VAR_SMTP_AUTH: "true"
+  SMTP_HOST: "smtp.placeholder.com"
+  SMTP_PORT: "587"
+  SMTP_FROM: "noreply@weppino.com"
+  SMTP_AUTH: "true"
   # Port 587 with STARTTLS is the standard for authenticated SMTP submission.
   # Set ssl to true and starttls to false only if your provider requires SMTPS (port 465).
-  IMPORT_VAR_SMTP_SSL: "false"
-  IMPORT_VAR_SMTP_STARTTLS: "true"
+  SMTP_SSL: "false"
+  SMTP_STARTTLS: "true"

@@ -5,12 +5,12 @@ metadata:
   name: keycloak-config-vars
   namespace: identity
 data:
-  IMPORT_VAR_SSL_REQUIRED: "external"
-  IMPORT_VAR_SMTP_HOST: "mailpit"
-  IMPORT_VAR_SMTP_PORT: "1025"
-  IMPORT_VAR_SMTP_FROM: "noreply@weppino.dev"
-  IMPORT_VAR_SMTP_AUTH: "false"
-  IMPORT_VAR_SMTP_SSL: "false"
-  IMPORT_VAR_SMTP_STARTTLS: "false"
-  IMPORT_VAR_SMTP_USER: ""
-  IMPORT_VAR_SMTP_PASSWORD: ""
+  SSL_REQUIRED: "external"
+  SMTP_HOST: "mailpit"
+  SMTP_PORT: "1025"
+  SMTP_FROM: "noreply@weppino.dev"
+  SMTP_AUTH: "false"
+  SMTP_SSL: "false"
+  SMTP_STARTTLS: "false"
+  SMTP_USER: ""
+  SMTP_PASSWORD: ""
