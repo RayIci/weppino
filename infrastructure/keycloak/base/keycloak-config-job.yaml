@@ -63,10 +63,6 @@ spec:
           envFrom:
             - configMapRef:
                 name: keycloak-config-vars
-            # keycloak-smtp-secret must be manually applied in prod:
-            #   kubectl create secret generic keycloak-smtp-secret -n identity \
-            #     --from-literal=IMPORT_VAR_SMTP_USER=<user> \
-            #     --from-literal=IMPORT_VAR_SMTP_PASSWORD=<password>
             - secretRef:
                 name: keycloak-smtp-secret
                 optional: true
