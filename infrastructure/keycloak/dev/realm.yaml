@@ -48,15 +48,15 @@ clients:
     serviceAccountsEnabled: false
     attributes:
       pkce.code.challenge.method: "S256"
+      # Post-logout redirect: where Keycloak sends the user after they log out.
+      # Without this the logout flow lands on a Keycloak page instead of the store.
+      # Stored as an attribute (##-separated) because keycloak-config-cli bundles
+      # an older ClientRepresentation that has no postLogoutRedirectUris field.
+      post.logout.redirect.uris: "http://localhost:3000##http://store.127.0.0.1.nip.io"
     redirectUris:
       - "http://localhost:3000/*"
       - "http://store.127.0.0.1.nip.io/*"
     webOrigins:
-      - "http://localhost:3000"
-      - "http://store.127.0.0.1.nip.io"
-    # Post-logout redirect: where Keycloak sends the user after they log out.
-    # Without this the logout flow lands on a Keycloak page instead of the store.
-    postLogoutRedirectUris:
       - "http://localhost:3000"
       - "http://store.127.0.0.1.nip.io"
     fullScopeAllowed: false

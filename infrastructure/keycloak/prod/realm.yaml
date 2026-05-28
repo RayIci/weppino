@@ -48,13 +48,14 @@ clients:
     serviceAccountsEnabled: false
     attributes:
       pkce.code.challenge.method: "S256"
+      # Post-logout redirect: where Keycloak sends the user after they log out.
+      # Without this the logout flow lands on a Keycloak page instead of the store.
+      # Stored as an attribute (##-separated) because keycloak-config-cli bundles
+      # an older ClientRepresentation that has no postLogoutRedirectUris field.
+      post.logout.redirect.uris: "https://weppino.com"
     redirectUris:
       - "https://weppino.com/*"
     webOrigins:
-      - "https://weppino.com"
-    # Post-logout redirect: where Keycloak sends the user after they log out.
-    # Without this the logout flow lands on a Keycloak page instead of the store.
-    postLogoutRedirectUris:
       - "https://weppino.com"
     fullScopeAllowed: false
     # Explicitly define which scopes are included in the token.
