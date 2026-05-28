@@ -8,8 +8,8 @@ namespace: identity
 #
 #   keycloak-admin-secret:
 #     kubectl create secret generic keycloak-admin-secret -n identity \
-#       --from-literal=KEYCLOAK_ADMIN=admin \
-#       --from-literal=KEYCLOAK_ADMIN_PASSWORD=<strong-password>
+#       --from-literal=KC_BOOTSTRAP_ADMIN_USERNAME=<username> \
+#       --from-literal=KC_BOOTSTRAP_ADMIN_PASSWORD=<strong-password>
 #
 #   postgres-secret (points to your managed DB — RDS, Cloud SQL, etc.):
 #     kubectl create secret generic postgres-secret -n identity \

@@ -51,12 +51,12 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: keycloak-admin-secret
-                  key: KEYCLOAK_ADMIN
+                  key: KC_BOOTSTRAP_ADMIN_USERNAME
             - name: KEYCLOAK_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: keycloak-admin-secret
-                  key: KEYCLOAK_ADMIN_PASSWORD
+                  key: KC_BOOTSTRAP_ADMIN_PASSWORD
           envFrom:
             - configMapRef:
                 name: keycloak-config-vars

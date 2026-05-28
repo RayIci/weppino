@@ -45,16 +45,16 @@ spec:
                   key: POSTGRES_PASSWORD
 
             # Admin credentials injected from a manually applied Secret (never in git).
-            - name: KEYCLOAK_ADMIN
+            - name: KC_BOOTSTRAP_ADMIN_USERNAME
               valueFrom:
                 secretKeyRef:
                   name: keycloak-admin-secret
-                  key: KEYCLOAK_ADMIN
-            - name: KEYCLOAK_ADMIN_PASSWORD
+                  key: KC_BOOTSTRAP_ADMIN_USERNAME
+            - name: KC_BOOTSTRAP_ADMIN_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: keycloak-admin-secret
-                  key: KEYCLOAK_ADMIN_PASSWORD
+                  key: KC_BOOTSTRAP_ADMIN_PASSWORD
 
             # Required for liveness/readiness probes to work. Exposes /health/live
             # and /health/ready on the management port (9000).
@@ -84,7 +84,7 @@ spec:
             #   kubectl port-forward svc/keycloak 8080:80 -n identity
             # then open http://localhost:8080
             - name: KC_HOSTNAME_ADMIN
-              value: "localhost"
+              value: "http://localhost:8080"
 
           ports:
             - containerPort: 8080

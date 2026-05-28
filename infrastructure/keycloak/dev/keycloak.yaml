@@ -41,35 +41,36 @@ spec:
             # Admin credentials injected from keycloak-admin-secret.yaml.
             # Even in dev we use a Secret rather than plaintext to keep the pattern
             # consistent with prod and avoid accidentally promoting hardcoded values.
-            - name: KEYCLOAK_ADMIN
+            - name: KC_BOOTSTRAP_ADMIN_USERNAME
               valueFrom:
                 secretKeyRef:
                   name: keycloak-admin-secret
-                  key: KEYCLOAK_ADMIN
-            - name: KEYCLOAK_ADMIN_PASSWORD
+                  key: KC_BOOTSTRAP_ADMIN_USERNAME
+            - name: KC_BOOTSTRAP_ADMIN_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: keycloak-admin-secret
-                  key: KEYCLOAK_ADMIN_PASSWORD
+                  key: KC_BOOTSTRAP_ADMIN_PASSWORD
 
             # Required for liveness/readiness probes to work. Exposes /health/live
             # and /health/ready on the management port (9000).
             - name: KC_HEALTH_ENABLED
               value: "true"
 
-            # Disables strict hostname validation so Keycloak accepts requests from any
-            # hostname (nip.io, localhost, etc.) without extra config. Dev only.
+            # Allows the realm endpoints to respond to any Host header (nip.io, localhost,
+            # etc.). In dev, traffic comes from multiple origins so a fixed hostname would
+            # require extra config for every access pattern. Never set this to false in prod.
             - name: KC_HOSTNAME_STRICT
               value: "false"
 
-            # Restricts the admin console to the "localhost" hostname only, consistent
-            # with prod. The ingress at keycloak.127.0.0.1.nip.io serves the weppino
-            # realm login page only — not the admin console.
+            # Restricts the admin console to requests whose Host header matches this URL.
+            # Requests arriving via the ingress get a 404 because their Host header
+            # does not match — only port-forward traffic does.
             # Access the admin console via:
             #   kubectl port-forward svc/keycloak 8080:80 -n identity
             # then open http://localhost:8080
             - name: KC_HOSTNAME_ADMIN
-              value: "localhost"
+              value: "http://localhost:8080"
 
           ports:
             - containerPort: 8080
