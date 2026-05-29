@@ -14,6 +14,16 @@ spec:
       labels:
         app: keycloak
     spec:
+      # Copies the theme JAR from the theme image into a shared emptyDir before
+      # Keycloak starts. Keycloak picks up JARs from /opt/keycloak/providers/ automatically.
+      initContainers:
+        - name: install-theme
+          image: ghcr.io/rayici/keycloak-theme:0.1.0
+          command: ["cp", "/theme.jar", "/providers/keycloak-theme.jar"]
+          volumeMounts:
+            - name: providers
+              mountPath: /providers
+
       containers:
         - name: keycloak
           image: quay.io/keycloak/keycloak:26.3.3
@@ -81,6 +91,10 @@ spec:
             - name: KC_HOSTNAME_STRICT
               value: "true"
 
+          volumeMounts:
+            - name: providers
+              mountPath: /opt/keycloak/providers
+
           ports:
             - containerPort: 8080
             - containerPort: 9000
@@ -112,6 +126,10 @@ spec:
             limits:
               cpu: "1"
               memory: 1Gi
+
+      volumes:
+        - name: providers
+          emptyDir: {}
 ---
 apiVersion: v1
 kind: Service
