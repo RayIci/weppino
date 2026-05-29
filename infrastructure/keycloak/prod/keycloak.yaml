@@ -1,0 +1,130 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keycloak
+  namespace: identity
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: keycloak
+  template:
+    metadata:
+      labels:
+        app: keycloak
+    spec:
+      containers:
+        - name: keycloak
+          image: quay.io/keycloak/keycloak:26.3.3
+          # "start" enables production-hardened mode: enforces HTTPS, strict hostname
+          # checking, and disables development-only features. Never use "start-dev" in prod.
+          args: ["start"]
+          env:
+            - name: KC_DB
+              value: postgres
+            # Full JDBC URL to the managed database (RDS, Cloud SQL, etc.).
+            # Injected from postgres-secret so the hostname never lives in git.
+            - name: KC_DB_URL
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_URL
+
+            # Database credentials are injected from a Secret that must be
+            # manually applied before ArgoCD syncs.
+            - name: KC_DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_USER
+            - name: KC_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_PASSWORD
+
+            # Admin credentials injected from a manually applied Secret (never in git).
+            - name: KC_BOOTSTRAP_ADMIN_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-admin-secret
+                  key: KC_BOOTSTRAP_ADMIN_USERNAME
+            - name: KC_BOOTSTRAP_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-admin-secret
+                  key: KC_BOOTSTRAP_ADMIN_PASSWORD
+
+            # Required for liveness/readiness probes to work. Exposes /health/live
+            # and /health/ready on the management port (9000).
+            - name: KC_HEALTH_ENABLED
+              value: "true"
+
+            # TLS is terminated at ingress-nginx, not at Keycloak itself.
+            # Keycloak communicates over plain HTTP internally within the cluster.
+            - name: KC_HTTP_ENABLED
+              value: "true"
+
+            # Tells Keycloak it is behind a reverse proxy forwarding X-Forwarded-* headers.
+            # Required so Keycloak generates correct redirect URIs and token issuer URLs
+            # using the original HTTPS scheme and public hostname, not the internal HTTP one.
+            - name: KC_PROXY_HEADERS
+              value: xforwarded
+
+            # The public-facing URL that end users reach (login pages, token endpoints).
+            # Update this to your actual domain before deploying.
+            - name: KC_HOSTNAME
+              value: "auth.weppino.com"
+
+            # Only respond to realm endpoints whose Host header matches KC_HOSTNAME.
+            - name: KC_HOSTNAME_STRICT
+              value: "true"
+
+          ports:
+            - containerPort: 8080
+            - containerPort: 9000
+              name: management
+
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: 9000
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 9000
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            failureThreshold: 3
+
+          # 512Mi request / 1Gi limit is a conservative baseline for a
+          # single-realm, low-traffic deployment.
+          #
+          # TODO: Adjust based on observed usage.
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: keycloak
+  namespace: identity
+spec:
+  selector:
+    app: keycloak
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+    - name: management
+      port: 9000
+      targetPort: 9000

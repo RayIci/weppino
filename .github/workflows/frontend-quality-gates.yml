@@ -1,0 +1,67 @@
+---
+# Reusable quality-gate template for every frontend project in this monorepo.
+#
+# USAGE:
+#   jobs:
+#     quality-gates:
+#       uses: ./.github/workflows/frontend-quality-gates.yml
+#       with:
+#         project-dir: apps/keycloak-theme
+#         project-name: keycloak-theme
+#         build-command: build-keycloak-theme  # default: build
+name: Frontend quality gates (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      project-dir:
+        description: "Path to the project from the repo root (e.g. apps/store-website)"
+        required: true
+        type: string
+      project-name:
+        description: "Short project name for artifact labels (e.g. store-website)"
+        required: true
+        type: string
+      build-command:
+        description: "bun script name to run for the build step (default: build)"
+        required: false
+        type: string
+        default: "build"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Bun is not pre-installed on ubuntu-latest.
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      # Cache keyed on the project's own bun.lock — each app has its own lockfile.
+      - uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ inputs.project-name }}-${{ hashFiles(format('{0}/bun.lock', inputs.project-dir)) }}
+          restore-keys: bun-${{ inputs.project-name }}-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+        working-directory: ${{ inputs.project-dir }}
+
+      # ── GATE 1: FORMAT ──────────────────────────────────────────────────────
+      - name: Format check (Prettier)
+        run: bunx prettier --check .
+        working-directory: ${{ inputs.project-dir }}
+
+      # ── GATE 2: LINT ────────────────────────────────────────────────────────
+      - name: Lint (ESLint)
+        run: bun run lint
+        working-directory: ${{ inputs.project-dir }}
+
+      # ── GATE 3: BUILD ───────────────────────────────────────────────────────
+      - name: Build (${{ inputs.build-command }})
+        run: bun run ${{ inputs.build-command }}
+        working-directory: ${{ inputs.project-dir }}

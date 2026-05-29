@@ -1,0 +1,82 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: keycloak-config
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+spec:
+  backoffLimit: 3
+  template:
+    spec:
+      restartPolicy: OnFailure
+      # The Job has no need for Kubernetes API access. Disabling the auto-mounted
+      # service account token removes a credential from the pod's filesystem that
+      # could be exploited if the container is compromised.
+      automountServiceAccountToken: false
+      initContainers:
+        - name: wait-for-keycloak
+          image: curlimages/curl:8.12.1
+          command:
+            - sh
+            - -c
+            - |
+              until curl -sf http://keycloak:9000/health/ready; do
+                echo "waiting for keycloak..."; sleep 5
+              done
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 50m
+              memory: 32Mi
+      containers:
+        - name: keycloak-config-cli
+          # "latest-26" is a floating tag — safe for dev but must be pinned for prod.
+          # Pin per overlay using kustomize `images`:
+          #   images:
+          #     - name: adorsys/keycloak-config-cli
+          #       newTag: 6.4.0-26.3.3
+          image: adorsys/keycloak-config-cli:latest-26
+          env:
+            - name: KEYCLOAK_URL
+              value: http://keycloak
+            - name: IMPORT_FILES_LOCATIONS
+              value: /config/realm.yaml
+            # Enable variable substitution in the realm config file
+            # Without this, placeholders like $(VAR_NAME) in realm.yaml
+            # won't be replaced
+            - name: IMPORT_VAR_SUBSTITUTION_ENABLED
+              value: "true"
+            - name: KEYCLOAK_USER
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-admin-secret
+                  key: KC_BOOTSTRAP_ADMIN_USERNAME
+            - name: KEYCLOAK_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-admin-secret
+                  key: KC_BOOTSTRAP_ADMIN_PASSWORD
+          envFrom:
+            - configMapRef:
+                name: keycloak-config-vars
+            - secretRef:
+                name: keycloak-smtp-secret
+                optional: true
+          volumeMounts:
+            - name: realm-config
+              mountPath: /config
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+      volumes:
+        - name: realm-config
+          configMap:
+            name: keycloak-realm-config

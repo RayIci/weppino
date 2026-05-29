@@ -1,0 +1,16 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: keycloak-config-vars
+  namespace: identity
+data:
+  SSL_REQUIRED: "external"
+  SMTP_HOST: "mailpit"
+  SMTP_PORT: "1025"
+  SMTP_FROM: "noreply@weppino.dev"
+  SMTP_AUTH: "false"
+  SMTP_SSL: "false"
+  SMTP_STARTTLS: "false"
+  SMTP_USER: ""
+  SMTP_PASSWORD: ""

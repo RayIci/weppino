@@ -1,0 +1,41 @@
+# Secrets that must be manually applied before ArgoCD syncs (never committed to git):
+#
+#   keycloak-admin-secret:
+#     kubectl create secret generic keycloak-admin-secret -n identity \
+#       --from-literal=KC_BOOTSTRAP_ADMIN_USERNAME=<username> \
+#       --from-literal=KC_BOOTSTRAP_ADMIN_PASSWORD=<strong-password>
+#
+#   postgres-secret (points to your managed DB — RDS, Cloud SQL, etc.):
+#     kubectl create secret generic postgres-secret -n identity \
+#       --from-literal=POSTGRES_URL=jdbc:postgresql://<managed-db-host>:5432/keycloak \
+#       --from-literal=POSTGRES_USER=<user> \
+#       --from-literal=POSTGRES_PASSWORD=<password> \
+#       --from-literal=POSTGRES_DB=keycloak
+#
+#   keycloak-smtp-secret (when SMTP auth is configured):
+#     kubectl create secret generic keycloak-smtp-secret -n identity \
+#       --from-literal=SMTP_USER=<smtp-user> \
+#       --from-literal=SMTP_PASSWORD=<smtp-password>
+
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: identity
+
+resources:
+  - ../base
+  - keycloak.yaml
+  - realm-vars.yaml
+
+configMapGenerator:
+  - name: keycloak-realm-config
+    files:
+      - realm.yaml
+
+# Pin the keycloak-config-cli image to a specific version in prod.
+# Never run a floating tag (latest-*) in production — a silent upstream push
+# can change behaviour between syncs. Update this tag when upgrading Keycloak.
+images:
+  - name: adorsys/keycloak-config-cli
+    newTag: 6.4.0-26.3.3

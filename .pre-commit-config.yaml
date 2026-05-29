@@ -20,7 +20,7 @@ repos:
         language: script
         entry: scripts/ts-format.sh
         pass_filenames: true
-        files: ^apps/.*\.(ts|tsx|json|yaml|css|md)$
+        files: ^apps/.*\.(ts|tsx|css)$
 
       - id: ts-lint
         name: ESLint
@@ -28,3 +28,9 @@ repos:
         entry: scripts/ts-lint.sh
         pass_filenames: false
         files: ^apps/.*\.(ts|tsx)$
+
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: "v4.0.0-alpha.8"
+    hooks:
+      - id: prettier
+        types_or: [json, yaml, markdown]

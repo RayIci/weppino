@@ -1,0 +1,17 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: keycloak-config-vars
+  namespace: identity
+data:
+  SSL_REQUIRED: "all"
+  # Update with your SMTP provider details before deploying.
+  SMTP_HOST: "smtp.placeholder.com"
+  SMTP_PORT: "587"
+  SMTP_FROM: "noreply@weppino.com"
+  SMTP_AUTH: "true"
+  # Port 587 with STARTTLS is the standard for authenticated SMTP submission.
+  # Set ssl to true and starttls to false only if your provider requires SMTPS (port 465).
+  SMTP_SSL: "false"
+  SMTP_STARTTLS: "true"

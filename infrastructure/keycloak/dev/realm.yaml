@@ -1,0 +1,106 @@
+---
+realm: weppino
+enabled: true
+displayName: "Weppino"
+
+# Security
+sslRequired: "$(SSL_REQUIRED)"
+bruteForceProtected: true
+permanentLockout: false
+maxFailureWaitSeconds: 900
+minimumQuickLoginWaitSeconds: 60
+waitIncrementSeconds: 60
+quickLoginCheckMilliSeconds: 1000
+maxDeltaTimeSeconds: 43200
+failureFactor: 10
+
+# Registration
+registrationAllowed: true
+loginWithEmailAllowed: true
+registrationEmailAsUsername: true
+duplicateEmailsAllowed: false
+resetPasswordAllowed: true
+editUsernameAllowed: false
+verifyEmail: true
+
+# Password policy
+passwordPolicy: "length(8) and upperCase(1) and lowerCase(1) and digits(1) and specialChars(1) and notUsername(undefined)"
+
+# Token lifespans (seconds)
+accessTokenLifespan: 300
+ssoSessionMaxLifespan: 36000
+ssoSessionIdleTimeout: 1800
+
+# Enforce refresh token rotation
+revokeRefreshToken: true
+refreshTokenMaxReuse: 0
+
+clients:
+  - clientId: store-website
+    name: "Store Website"
+    description: "Weppino storefront (Next.js)"
+    enabled: true
+    publicClient: true
+    standardFlowEnabled: true
+    directAccessGrantsEnabled: false
+    serviceAccountsEnabled: false
+    attributes:
+      pkce.code.challenge.method: "S256"
+      # Post-logout redirect: where Keycloak sends the user after they log out.
+      # Without this the logout flow lands on a Keycloak page instead of the
+      # store.
+      #
+      # Stored as an attribute (##-separated) because keycloak-config-cli
+      # bundles an older ClientRepresentation that has no postLogoutRedirectUris
+      # field.
+      post.logout.redirect.uris: "http://localhost:3000##http://store.127.0.0.1.nip.io"
+    redirectUris:
+      - "http://localhost:3000/*"
+      - "http://store.127.0.0.1.nip.io/*"
+    webOrigins:
+      - "http://localhost:3000"
+      - "http://store.127.0.0.1.nip.io"
+    fullScopeAllowed: false
+    defaultClientScopes:
+      - openid
+      - profile
+      - email
+      - web-origins
+      - acr
+      - basic
+    optionalClientScopes:
+      - address
+      - phone
+      - offline_access
+
+requiredActions:
+  - alias: VERIFY_EMAIL
+    name: "Verify Email"
+    providerId: VERIFY_EMAIL
+    enabled: true
+    defaultAction: true
+    priority: 50
+  - alias: UPDATE_PASSWORD
+    name: "Update Password"
+    providerId: UPDATE_PASSWORD
+    enabled: true
+    defaultAction: false
+    priority: 30
+  - alias: CONFIGURE_TOTP
+    name: "Configure OTP"
+    providerId: CONFIGURE_TOTP
+    enabled: true
+    defaultAction: false
+    priority: 10
+
+smtpServer:
+  host: "$(SMTP_HOST)"
+  port: "$(SMTP_PORT)"
+  from: "$(SMTP_FROM)"
+  fromDisplayName: "Weppino"
+  # Mailpit on port 1025 requires neither SSL nor STARTTLS.
+  ssl: "$(SMTP_SSL)"
+  starttls: "$(SMTP_STARTTLS)"
+  auth: "$(SMTP_AUTH)"
+  user: "$(SMTP_USER)"
+  password: "$(SMTP_PASSWORD)"

@@ -10,6 +10,9 @@ node_modules/
 .next/
 out/
 
+# Keycloakify build output
+dist_keycloak/
+
 # IDE
 .idea/
 .vscode/

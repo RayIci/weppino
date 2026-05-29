@@ -1,15 +1,9 @@
 version: "3"
 
 includes:
-  shared-kernel:
-    taskfile: ./libs/shared-kernel/Taskfile.yml
-    dir: ./libs/shared-kernel
-  order-service:
-    taskfile: ./services/order-service/Taskfile.yml
-    dir: ./services/order-service
-  store-website:
-    taskfile: ./apps/store-website/Taskfile.yml
-    dir: ./apps/store-website
+  infra:
+    taskfile: ./infrastructure/Taskfile.yml
+    dir: ./infrastructure
 
 tasks:
   setup:
@@ -17,14 +11,58 @@ tasks:
     cmds:
       - bash scripts/setup.sh
 
+  bootstrap:
+    desc: Bootstrap the local Kubernetes dev cluster (run once after cloning)
+    cmds:
+      - task: infra:bootstrap
+
   format:
-    desc: Format all projects
-    deps: [shared-kernel:format, order-service:format, store-website:format]
+    desc: Format all projects and root files
+    cmds:
+      - |
+        for dir in services/*/ libs/*/ apps/*/; do
+          if [ -f "${dir}Taskfile.yml" ]; then
+            echo "Formatting ${dir}..."
+            (cd "${dir}" && task format)
+          fi
+        done
+      - task: format:md
+      - task: format:yaml
+      - task: format:json
+
+  format:md:
+    desc: Format all Markdown files
+    cmds:
+      - bunx prettier --write "**/*.md"
+
+  format:yaml:
+    desc: Format all YAML files
+    cmds:
+      - bunx prettier --write "**/*.yaml" "**/*.yml"
+
+  format:json:
+    desc: Format all JSON files
+    cmds:
+      - bunx prettier --write "**/*.json"
 
   lint:
     desc: Lint all projects
-    deps: [shared-kernel:lint, order-service:lint, store-website:lint]
+    cmds:
+      - |
+        for dir in services/*/ libs/*/ apps/*/; do
+          if [ -f "${dir}Taskfile.yml" ]; then
+            echo "Linting ${dir}..."
+            (cd "${dir}" && task lint)
+          fi
+        done
 
   test:
     desc: Test all projects
-    deps: [shared-kernel:test, order-service:test, store-website:test]
+    cmds:
+      - |
+        for dir in services/*/ libs/*/ apps/*/; do
+          if [ -f "${dir}Taskfile.yml" ]; then
+            echo "Testing ${dir}..."
+            (cd "${dir}" && task test)
+          fi
+        done
