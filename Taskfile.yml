@@ -17,7 +17,7 @@ tasks:
       - task: infra:bootstrap
 
   format:
-    desc: Format all projects
+    desc: Format all projects and root files
     cmds:
       - |
         for dir in services/*/ libs/*/ apps/*/; do
@@ -26,6 +26,24 @@ tasks:
             (cd "${dir}" && task format)
           fi
         done
+      - task: format:md
+      - task: format:yaml
+      - task: format:json
+
+  format:md:
+    desc: Format all Markdown files
+    cmds:
+      - bunx prettier --write "**/*.md"
+
+  format:yaml:
+    desc: Format all YAML files
+    cmds:
+      - bunx prettier --write "**/*.yaml" "**/*.yml"
+
+  format:json:
+    desc: Format all JSON files
+    cmds:
+      - bunx prettier --write "**/*.json"
 
   lint:
     desc: Lint all projects

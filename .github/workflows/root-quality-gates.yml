@@ -1,0 +1,26 @@
+---
+# Reusable quality-gate template for root and cross-cutting files (MD/YAML/JSON).
+#
+# USAGE:
+#   jobs:
+#     quality-gates:
+#       uses: ./.github/workflows/root-quality-gates.yml
+name: Root quality gates (reusable)
+
+on:
+  workflow_call: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      # ── GATE 1: FORMAT ──────────────────────────────────────────────────────
+      - name: Format check (Prettier)
+        run: bunx prettier --check "**/*.md" "**/*.yaml" "**/*.yml" "**/*.json"

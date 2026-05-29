@@ -20,7 +20,14 @@ repos:
         language: script
         entry: scripts/ts-format.sh
         pass_filenames: true
-        files: ^apps/.*\.(ts|tsx|json|yaml|css|md)$
+        files: ^apps/.*\.(ts|tsx|css)$
+
+      - id: files-format
+        name: Format MD/YAML/JSON (Prettier)
+        language: script
+        entry: scripts/files-format.sh
+        pass_filenames: true
+        files: \.(md|markdown|yaml|yml|json)$
 
       - id: ts-lint
         name: ESLint
