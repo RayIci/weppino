@@ -50,12 +50,15 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Extract the semver portion from the tag name.
-      # Input:  keycloak-theme-v1.2.3
-      # Output: version=1.2.3
-      - name: Extract semver from tag
+      # Extract the semver portion from the tag name and lowercase the owner.
+      # Input:  keycloak-theme-v1.2.3  →  version=1.2.3
+      # GHCR requires fully lowercase image names; github.repository_owner preserves
+      # original casing (e.g. RayIci), so we normalise it here.
+      - name: Extract semver and lowercase owner
         id: semver
-        run: echo "version=${GITHUB_REF_NAME#keycloak-theme-v}" >> "$GITHUB_OUTPUT"
+        run: |
+          echo "version=${GITHUB_REF_NAME#keycloak-theme-v}" >> "$GITHUB_OUTPUT"
+          echo "owner=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"
 
       # The Dockerfile is multi-stage: it installs deps and builds the JAR internally.
       # BuildKit GHA cache covers the bun install layer so re-runs are fast.
@@ -70,5 +73,5 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           tags: |
-            ghcr.io/${{ github.repository_owner }}/keycloak-theme:${{ steps.semver.outputs.version }}
-            ghcr.io/${{ github.repository_owner }}/keycloak-theme:latest
+            ghcr.io/${{ steps.semver.outputs.owner }}/keycloak-theme:${{ steps.semver.outputs.version }}
+            ghcr.io/${{ steps.semver.outputs.owner }}/keycloak-theme:latest
