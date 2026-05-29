@@ -1,7 +1,7 @@
 ---
 # Publishes the shared-kernel library to GitHub Packages (Maven repository).
 #
-# Triggers only when a version tag matching 'shared-kernel/v*' is pushed
+# Triggers only when a version tag matching 'shared-kernel-v*' is pushed
 # (e.g. shared-kernel-v0.2.0). Using a scoped prefix ensures this workflow
 # fires only for this library — not for tags belonging to other projects.
 #
@@ -16,10 +16,10 @@ run-name: "shared-kernel ${{ github.ref_name }} by @${{ github.actor }}"
 on:
   push:
     tags:
-      # Scoped tag pattern: only tags that start with 'shared-kernel/v' trigger this.
-      # Example matching tags: shared-kernel/v0.1.0, shared-kernel/v1.0.0-rc1
-      # Example non-matching tags: v1.0.0, order-service/v0.1.0 (those trigger other workflows)
-      - "shared-kernel/v*"
+      # Scoped tag pattern: only tags that start with 'shared-kernel-v' trigger this.
+      # Example matching tags: shared-kernel-v0.1.0, shared-kernel-v1.0.0-rc1
+      # Example non-matching tags: v1.0.0, order-service-v0.1.0 (those trigger other workflows)
+      - "shared-kernel-v*"
 
 jobs:
   # ── QUALITY GATES ───────────────────────────────────────────────────────────
