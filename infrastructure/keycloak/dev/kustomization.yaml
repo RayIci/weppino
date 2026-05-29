@@ -12,6 +12,10 @@ resources:
   - realm-vars.yaml
   - mailpit.yaml
 
+images:
+  - name: adorsys/keycloak-config-cli
+    newTag: 6.4.0-26.3.3
+
 configMapGenerator:
   - name: keycloak-realm-config
     files:
