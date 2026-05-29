@@ -32,10 +32,3 @@ configMapGenerator:
   - name: keycloak-realm-config
     files:
       - realm.yaml
-
-# Pin the keycloak-config-cli image to a specific version in prod.
-# Never run a floating tag (latest-*) in production — a silent upstream push
-# can change behaviour between syncs. Update this tag when upgrading Keycloak.
-images:
-  - name: adorsys/keycloak-config-cli
-    newTag: 6.4.0-26.3.3

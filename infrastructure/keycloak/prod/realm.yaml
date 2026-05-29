@@ -53,7 +53,9 @@ clients:
       - "https://weppino.com"
     fullScopeAllowed: false
     defaultClientScopes:
-      - openid
+      # Note: 'openid' is a reserved OIDC protocol scope, not a Keycloak client
+      # scope — it is implicit in every OIDC request and absent from the Admin API
+      # client-scopes endpoint. Listing it here causes keycloak-config-cli to NPE.
       - profile
       - email
       - web-origins

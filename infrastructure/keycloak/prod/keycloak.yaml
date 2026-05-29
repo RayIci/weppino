@@ -26,7 +26,7 @@ spec:
 
       containers:
         - name: keycloak
-          image: quay.io/keycloak/keycloak:26.3.3
+          image: quay.io/keycloak/keycloak:26.6.2
           # "start" enables production-hardened mode: enforces HTTPS, strict hostname
           # checking, and disables development-only features. Never use "start-dev" in prod.
           args: ["start"]

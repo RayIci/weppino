@@ -26,7 +26,7 @@ spec:
 
       containers:
         - name: keycloak
-          image: quay.io/keycloak/keycloak:26.3.3
+          image: quay.io/keycloak/keycloak:26.6.2
           # "start-dev" enables development mode: relaxed hostname/SSL checks, detailed
           # logs, and no startup optimisation. Never use this in prod.
           args: ["start-dev"]
