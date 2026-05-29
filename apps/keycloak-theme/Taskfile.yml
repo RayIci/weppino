@@ -1,0 +1,22 @@
+version: "3"
+
+tasks:
+  format:
+    desc: Format with Prettier
+    cmds:
+      - bunx prettier --write .
+
+  lint:
+    desc: Lint with ESLint
+    cmds:
+      - bun run lint
+
+  test:
+    desc: Run tests
+    cmds:
+      - echo "No tests configured yet"
+
+  build-keycloak-theme:
+    desc: Build Keycloakify JAR
+    cmds:
+      - bun run build-keycloak-theme

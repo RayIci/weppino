@@ -1,0 +1,71 @@
+---
+# Publishes the keycloak-theme Docker image to ghcr.io.
+#
+# Triggers only on tags matching 'keycloak-theme-v*' (e.g. keycloak-theme-v1.0.0).
+# Quality gates must pass before any image is pushed.
+#
+# After the first successful publish, make the GHCR package public:
+# GitHub → Packages → keycloak-theme → Package settings → Change visibility → Public
+# (or add an imagePullSecret to the K8s cluster for private access)
+name: Publish keycloak-theme
+run-name: "keycloak-theme ${{ github.ref_name }} by @${{ github.actor }}"
+
+on:
+  push:
+    tags:
+      - "keycloak-theme-v*"
+
+jobs:
+  # ── QUALITY GATES ───────────────────────────────────────────────────────────
+  # Runs format → lint → build as a gate. The publish job does its own build
+  # independently — no artifact transfer needed, and the reusable workflow stays
+  # generic for all frontend projects.
+  quality-gates:
+    uses: ./.github/workflows/frontend-quality-gates.yml
+    with:
+      project-dir: apps/keycloak-theme
+      project-name: keycloak-theme
+      build-command: build-keycloak-theme
+
+  # ── PUBLISH DOCKER IMAGE ─────────────────────────────────────────────────────
+  publish:
+    needs: quality-gates
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # packages: write must be on this job only — reusable workflow calls cannot
+      # override permissions, so placing it at the workflow level would fail.
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Extract the semver portion from the tag name.
+      # Input:  keycloak-theme-v1.2.3
+      # Output: version=1.2.3
+      - name: Extract semver from tag
+        id: semver
+        run: echo "version=${GITHUB_REF_NAME#keycloak-theme-v}" >> "$GITHUB_OUTPUT"
+
+      # The Dockerfile is multi-stage: it installs deps and builds the JAR internally.
+      # BuildKit GHA cache covers the bun install layer so re-runs are fast.
+      # Pushes two tags:
+      # - exact semver (e.g. 1.2.3)
+      # - latest
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: apps/keycloak-theme
+          push: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/keycloak-theme:${{ steps.semver.outputs.version }}
+            ghcr.io/${{ github.repository_owner }}/keycloak-theme:latest
