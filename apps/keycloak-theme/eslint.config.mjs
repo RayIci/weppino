@@ -46,5 +46,5 @@ export default typescriptEslint.config(
     rules: {
       "import/no-anonymous-default-export": "off",
     },
-  },
+  }
 );
