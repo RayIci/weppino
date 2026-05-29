@@ -22,16 +22,15 @@ repos:
         pass_filenames: true
         files: ^apps/.*\.(ts|tsx|css)$
 
-      - id: files-format
-        name: Format MD/YAML/JSON (Prettier)
-        language: script
-        entry: scripts/files-format.sh
-        pass_filenames: true
-        files: \.(md|markdown|yaml|yml|json)$
-
       - id: ts-lint
         name: ESLint
         language: script
         entry: scripts/ts-lint.sh
         pass_filenames: false
         files: ^apps/.*\.(ts|tsx)$
+
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: "v4.0.0-alpha.8"
+    hooks:
+      - id: prettier
+        types_or: [json, yaml, markdown]
