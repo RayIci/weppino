@@ -39,6 +39,16 @@ export default typescriptEslint.config(
       "react-hooks/exhaustive-deps": "off",
       "@typescript-eslint/no-redeclare": "off",
       "no-labels": "off",
+      // TypeScript provides prop-type checking — the react/prop-types rule is redundant.
+      "react/prop-types": "off",
+    },
+  },
+  {
+    // shadcn/ui components intentionally export both components and utility values
+    // (e.g. buttonVariants, useTheme). The react-refresh warning is a false positive here.
+    files: ["src/components/**"],
+    rules: {
+      "react-refresh/only-export-components": "off",
     },
   },
   {

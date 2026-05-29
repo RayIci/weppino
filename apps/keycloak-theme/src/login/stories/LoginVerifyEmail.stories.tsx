@@ -1,0 +1,24 @@
+import type { Meta, StoryObj } from "../../kc.gen";
+import { createKcPageStory } from "../KcPageStory";
+
+const { KcPageStory } = createKcPageStory({ pageId: "login-verify-email.ftl" });
+
+const meta = {
+  title: "login/LoginVerifyEmail",
+  component: KcPageStory,
+} satisfies Meta<typeof KcPageStory>;
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+export const Default: Story = {
+  args: {},
+};
+
+export const WithEmail: Story = {
+  args: {
+    kcContext: {
+      user: { email: "user@example.com" },
+    },
+  },
+};

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="110 60 260 90" width="260" height="90">
+  <text x="240" y="108" text-anchor="middle" font-family="'Libre Baskerville', Georgia, serif" font-weight="400" font-size="48" letter-spacing="3">
+    <tspan fill="#2C2C2C">Wep</tspan><tspan fill="#6B8F5E">pino</tspan>
+  </text>
+  <path d="M200 136 Q240 128 280 136" stroke="#6B8F5E" stroke-width="1.2" fill="none"/>
+</svg>

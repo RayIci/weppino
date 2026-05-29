@@ -16,7 +16,17 @@ const kcContextExtensionPerPage: KcContextExtensionPerPage = {};
 export const { getKcContextMock } = createGetKcContextMock({
   kcContextExtension,
   kcContextExtensionPerPage,
-  overrides: {},
+  overrides: {
+    // Pin Storybook stories to EN + IT only — matches the Weppino realm configuration.
+    // In production, Keycloak sends only the languages enabled in the realm settings.
+    locale: {
+      currentLanguageTag: "en",
+      supported: [
+        { url: "#", label: "English", languageTag: "en" },
+        { url: "#", label: "Italiano", languageTag: "it" },
+      ],
+    },
+  },
   overridesPerPage: {},
 });
 
