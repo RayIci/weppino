@@ -9,7 +9,7 @@ export default defineConfig({
     tailwindcss(),
     react(),
     keycloakify({
-      accountThemeImplementation: "none",
+      accountThemeImplementation: "Multi-Page",
       themeName: "weppino",
     }),
   ],

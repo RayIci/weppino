@@ -4,3 +4,9 @@ kind: Kustomization
 
 resources:
   - keycloak-config-job.yaml
+
+# Pinned here so dev and prod use the identical image.
+# Update this tag when upgrading keycloak-config-cli or Keycloak.
+images:
+  - name: adorsys/keycloak-config-cli
+    newTag: 6.5.1-26.5.5
