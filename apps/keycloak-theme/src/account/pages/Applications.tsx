@@ -16,7 +16,10 @@ export default function Applications({
 }: Props) {
   const { url, applications, stateChecker } = kcContext;
   const { msg, msgStr } = i18n;
-  const apps = applications?.applications ?? [];
+  // Filter out internal Keycloak system clients that have no displayable name or clientId.
+  const apps = (applications?.applications ?? []).filter(
+    (app) => app.client?.name || app.client?.clientId
+  );
 
   return (
     <Template
