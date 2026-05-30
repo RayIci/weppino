@@ -3,6 +3,8 @@ realm: weppino
 enabled: true
 displayName: "Weppino"
 loginTheme: weppino
+accountTheme: weppino
+emailTheme: weppino
 
 # Security
 sslRequired: "$(SSL_REQUIRED)"
