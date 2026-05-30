@@ -77,7 +77,12 @@ export default function Totp({ kcContext, i18n, doUseDefaultCss, Template, class
             </TabsList>
             <TabsContent value="qr" className="mt-4">
               <div className="flex justify-center p-4 bg-white rounded-lg border border-border w-fit">
-                <img src={totp.qrUrl} alt="QR Code" className="size-40" />
+                {/* totpSecretQrCode is a base64-encoded PNG — qrUrl is a navigation link, not an image */}
+                <img
+                  src={`data:image/png;base64,${totp.totpSecretQrCode}`}
+                  alt="QR Code"
+                  className="size-40"
+                />
               </div>
             </TabsContent>
             <TabsContent value="manual" className="mt-4 flex flex-col gap-3">

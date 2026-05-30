@@ -45,7 +45,7 @@ export default function Applications({
               <div className="flex flex-col gap-2 flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="font-medium text-sm truncate">
-                    {app.client.name || app.client.clientId}
+                    {app.client?.name || app.client?.clientId || "—"}
                   </span>
                   {app.effectiveUrl && (
                     <a
@@ -58,24 +58,24 @@ export default function Applications({
                     </a>
                   )}
                 </div>
-                {app.clientScopesGranted.length > 0 && (
+                {(app.clientScopesGranted ?? []).length > 0 && (
                   <div className="flex flex-wrap gap-1">
                     <span className="text-xs text-muted-foreground">
                       {msg("grantedPermissions")}:
                     </span>
-                    {app.clientScopesGranted.map((s) => (
+                    {(app.clientScopesGranted ?? []).map((s) => (
                       <Badge key={s} variant="secondary" className="text-xs">
                         {s}
                       </Badge>
                     ))}
                   </div>
                 )}
-                {app.additionalGrants.length > 0 && (
+                {(app.additionalGrants ?? []).length > 0 && (
                   <div className="flex flex-wrap gap-1">
                     <span className="text-xs text-muted-foreground">
                       {msg("additionalGrants")}:
                     </span>
-                    {app.additionalGrants.map((g) => (
+                    {(app.additionalGrants ?? []).map((g) => (
                       <Badge key={g} variant="outline" className="text-xs">
                         {g}
                       </Badge>
@@ -83,10 +83,10 @@ export default function Applications({
                   </div>
                 )}
               </div>
-              {app.client.consentRequired && (
+              {app.client?.consentRequired && (
                 <form action={url.applicationsUrl} method="post" className="shrink-0">
                   <input type="hidden" name="stateChecker" value={stateChecker} />
-                  <input type="hidden" name="clientId" value={app.client.clientId} />
+                  <input type="hidden" name="clientId" value={app.client?.clientId} />
                   <input type="hidden" name="submitAction" value="revoke" />
                   <Button
                     type="submit"
