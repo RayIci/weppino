@@ -14,15 +14,17 @@ RUN bun run build-keycloak-theme
 #
 # `jar uf` creates a temp file in the same directory as the JAR.
 # /app/dist_keycloak/ has restricted permissions after the keycloakify build,
-# so we copy the JAR to /tmp first, update it there, then copy back.
-RUN JAR_PATH=$(ls /app/dist_keycloak/*.jar) && \
-    JAR_NAME=$(basename "$JAR_PATH") && \
-    mkdir -p /tmp/email-inject/theme/weppino/email && \
+# so we copy each JAR to /tmp first, update it there, then copy back.
+# The loop handles any number of JARs safely (glob expansion is word-split safe
+# inside a for-in, unlike $(...) assignment).
+RUN mkdir -p /tmp/email-inject/theme/weppino/email && \
     cp -r /app/src/email/. /tmp/email-inject/theme/weppino/email/ && \
-    cp "$JAR_PATH" /tmp/email-inject/"$JAR_NAME" && \
-    cd /tmp/email-inject && \
-    jar uf "$JAR_NAME" theme/ && \
-    cp "$JAR_NAME" "$JAR_PATH"
+    for JAR in /app/dist_keycloak/*.jar; do \
+        NAME=$(basename "$JAR"); \
+        cp "$JAR" /tmp/email-inject/"$NAME"; \
+        cd /tmp/email-inject && jar uf "$NAME" theme/; \
+        cp /tmp/email-inject/"$NAME" "$JAR"; \
+    done
 
 FROM alpine:3.21
 COPY --from=builder /app/dist_keycloak/*.jar /theme.jar
