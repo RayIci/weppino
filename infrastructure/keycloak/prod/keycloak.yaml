@@ -18,7 +18,7 @@ spec:
       # Keycloak starts. Keycloak picks up JARs from /opt/keycloak/providers/ automatically.
       initContainers:
         - name: install-theme
-          image: ghcr.io/rayici/keycloak-theme:0.1.0
+          image: ghcr.io/rayici/keycloak-theme:0.2.0
           command: ["cp", "/theme.jar", "/providers/keycloak-theme.jar"]
           volumeMounts:
             - name: providers
