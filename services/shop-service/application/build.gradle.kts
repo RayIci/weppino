@@ -4,4 +4,5 @@ plugins {
 
 dependencies {
     implementation(project(":domain"))
+    compileOnly(libs.jakarta.cdi.api)
 }

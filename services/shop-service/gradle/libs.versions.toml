@@ -2,9 +2,11 @@
 quarkus = "3.36.0"
 spotless = "8.5.1"
 errorprone-plugin = "4.4.0"
+jakarta-cdi-api = "4.0.1"
 
 [libraries]
 quarkus-bom = { module = "io.quarkus.platform:quarkus-bom", version.ref = "quarkus" }
+jakarta-cdi-api = { module = "jakarta.enterprise:jakarta.enterprise.cdi-api", version.ref = "jakarta-cdi-api" }
 
 [plugins]
 quarkus = { id = "io.quarkus", version.ref = "quarkus" }
