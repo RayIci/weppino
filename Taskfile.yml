@@ -11,6 +11,11 @@ tasks:
     cmds:
       - bash scripts/setup.sh
 
+  gradle:auth:
+    desc: Configure ~/.gradle/gradle.properties with GitHub Packages credentials (run once per developer)
+    cmds:
+      - bash scripts/gradle-auth.sh
+
   bootstrap:
     desc: Bootstrap the local Kubernetes dev cluster (run once after cloning)
     cmds:
