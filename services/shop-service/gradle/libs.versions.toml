@@ -1,0 +1,12 @@
+[versions]
+quarkus = "3.36.0"
+spotless = "8.5.1"
+errorprone-plugin = "4.4.0"
+
+[libraries]
+quarkus-bom = { module = "io.quarkus.platform:quarkus-bom", version.ref = "quarkus" }
+
+[plugins]
+quarkus = { id = "io.quarkus", version.ref = "quarkus" }
+spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
+errorprone-plugin = { id = "net.ltgt.errorprone", version.ref = "errorprone-plugin" }
